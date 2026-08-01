@@ -1,4 +1,0 @@
-interface:
-  display_name: "TidyMac"
-  short_description: "Audit and safely reclaim macOS disk space"
-  default_prompt: "Use $tidymac to audit my Mac for reclaimable disk space and present a consequence-aware cleanup plan."

@@ -10,7 +10,7 @@ Classify evidence and consequences independently. Never turn “probably a cache
 | Likely | Name, location, contents, and timestamps consistently suggest an identity. | Inspect before recommending. |
 | Unknown | Evidence is missing, ambiguous, or contradictory. | Research; do not propose deletion yet. |
 
-Treat `unmatched` from `scan_orphans.py` as unknown. It is not equivalent to orphaned.
+Treat failure to find a local owner as unknown. It is not equivalent to orphaned.
 
 ## Consequence
 
@@ -37,11 +37,18 @@ Do not use an auto-clean tier. A bare skill invocation authorizes read-only audi
 
 ## Reclaimable totals
 
-- Show `potential`, `recommended`, and `approved` totals separately.
+- Show `potential`, `recommended`, `approved`, `staged in Trash`, and `observed reclaimed` separately. Zero is a valid value.
+- Normalize source estimates to bytes before arithmetic, then display each equation in one unit. Preserve a native tool's decimal-GB figure beside the normalized value, not inside a mixed-unit sum.
+- Show the included finding IDs or named aggregates beside each total and verify the arithmetic explicitly. Use a range rather than false precision when overlap or APFS behavior is uncertain.
 - Do not add an ancestor finding and one of its descendants.
+- Do not add inclusive alternatives. If an aggressive action contains a recommended action, show the aggressive inclusive total and its additional delta, not their sum.
 - Do not count context-only findings, Time Machine local snapshots, opaque VM disk images, or non-regenerable data in the recommended total.
-- Describe scanner sizes as allocated-size estimates. APFS clones, snapshots, sparse files, compression, and purgeable space can make apparent and physically recoverable sizes differ.
+- Keep Trash out of the recommended total until its contents are reviewed and the user explicitly selects irreversible emptying. Moving additional items to Trash is staged, not reclaimed.
+- Define `potential` as evidence-backed reclaimable space with a concrete action and known consequence. For every included ID, name the supported native cleanup command or the exact guarded Trash workflow, plus any required stopped-app or stopped-service precondition. A label such as “conditional,” “user decision,” “removable,” or “regenerable-looking” is not a concrete action. Exclude the ID until the action and preconditions are established. Also exclude non-regenerable history/content, context-only data, opaque runtime disks, and stores whose reclaimable fraction is wholly unknown.
+- Describe measured sizes as allocated-size estimates. APFS clones, snapshots, sparse files, compression, and purgeable space can make apparent and physically recoverable sizes differ.
 - Use before/after free-space measurements as the final authority, while noting that background activity can change them.
+
+If the displayed candidate rows do not exactly sum to their stated total, fix the rows or the total before reporting. A prose range does not excuse arithmetic whose lower or upper bound cannot be reproduced.
 
 ## Report shape
 
@@ -57,3 +64,7 @@ For each actionable finding, show:
 | Recommendation | Keep, clean, inspect, or research |
 
 Lead with the best few opportunities. Put exhaustive low-value inventory behind a concise summary.
+
+Also report investigation coverage: the share of ranked, non-overlapping measured bytes that reached a conclusion. A raw candidate, an unexplained `unknown`, or a generic “inspect later” does not count as contextualized coverage.
+
+Write coverage as `contextualized allocated-size estimate / measured in-scope allocated-size estimate = percentage`, with separately measured root IDs. Do not call this whole-machine coverage when protected or inaccessible roots were not measured; disclose those roots and bytes separately.
