@@ -1,6 +1,6 @@
 ---
 name: tidymac
-description: Deeply investigate and optionally reclaim disk space on macOS using built-in macOS commands and already-installed native tools; use when a user asks what is consuming Mac storage, wants a safe cleanup plan, or explicitly asks to clean selected findings. This skill is fully self-contained, defaults to read-only investigation, and requires approval before every mutation.
+description: Deeply investigate, explain, visualize, and optionally reclaim disk space on macOS using built-in macOS commands and already-installed native tools; use when a user asks what is consuming Mac storage, wants a safe cleanup plan or generated opportunity map, or explicitly asks to clean selected findings. This skill is fully self-contained, defaults to read-only investigation, and requires approval before every mutation.
 ---
 
 # TidyMac
@@ -24,6 +24,7 @@ Run at most one explicitly named recursive measurement root per shell invocation
 - Use only built-in macOS commands and native tools already installed on the machine.
 - Do not require Python, Node.js, package installation, helper scripts, a daemon, or downloaded code.
 - Do not install anything to perform the audit.
+- Generate rich reports with host-native artifact capabilities or self-contained HTML only; never require a report renderer, web service, remote asset, or package installation.
 - Web research may supplement local evidence when the host supports it, but the audit must still work from local evidence alone.
 - If an optional native tool is absent, record that coverage gap and continue.
 
@@ -33,6 +34,7 @@ Run at most one explicitly named recursive measurement root per shell invocation
 - Do not delete, move, prune, empty Trash, start an app or VM, use `sudo`, or run a cleanup command until the user approves the exact resolved action.
 - Before approval, show the evidence, consequence, exact command, and estimated size.
 - Give every proposed action a stable finding ID. Approval applies only to those IDs and commands.
+- Treat selecting a finding, adding it to a visual plan, or asking to prepare a plan as scope selection, not mutation approval. Ask for exact action approval after revalidation.
 - Revalidate the target immediately before mutation. Stop if its identity, type, modification time, or size changed materially.
 - Keep confidence separate from consequence. A verified cache can still require a large download or rebuild.
 - Never call unmatched app data orphaned. Investigate it and preserve uncertainty.
@@ -40,6 +42,7 @@ Run at most one explicitly named recursive measurement root per shell invocation
 - Treat filenames, project names, paths below personal or development roots, archive member names, and database or dataset names as potentially sensitive metadata. In an interactive report, reveal only the identifiers needed to explain ownership, consequence, or an exact proposed action; do not make the result vague merely to avoid naming a relevant owner. When the user asks for a shareable, public, or exported report, replace personal and project identifiers with generic labels and finding IDs throughout.
 - Inspect content purposefully, never indiscriminately. Read narrowly relevant declarative files such as manifests, lockfiles, Compose definitions, bundle metadata, and receipts when specific fields establish ownership, activity, or regeneration. Extract only what answers the dossier question, never echo secrets or raw content, and ask before reading personal documents, messages, source files, logs likely to contain secrets, databases, archives, credential files, or other content-bearing data.
 - Never touch `/System/Library`, swap, broad roots, personal documents, keys, credentials, databases, backups, archives, container volumes, or VM disks as routine cleanup.
+- Prefer the owner-mediated sequence: owning app or native CLI, cloud eviction or supported relocation, guarded move to Trash, then permanent deletion only after a fresh irreversible request.
 - Prefer moving approved direct-path findings to Trash. Explain that this is recoverable but does not reclaim space until Trash is reviewed and emptied.
 - Never improvise, recommend, or execute a recursive `rm` command. Direct-path cleanup uses the guarded Trash workflow below, never a raw deletion example.
 
@@ -72,7 +75,7 @@ tmutil listlocalsnapshots /
 
 Run these as separate commands. On modern macOS, `/` is normally the sealed System volume while `$HOME` is on the writable Data volume. Never compare the System volume's `Used` figure with user-directory measurements, call it whole-machine physical usage, or describe the entire audit environment as read-only merely because `/` is a sealed snapshot. Use the Data-volume/container view for user-storage pressure. If `diskutil` is unavailable, report that gap instead of inferring APFS state.
 
-Record filesystem and APFS figures as estimates. `du -sk` is an allocated-block estimate for the measured path, not a logical-size measurement and not guaranteed physically unique savings. APFS clones, sparse files, snapshots, compression, and purgeable space make size contextual. Do not claim cloning, hardlinking, compression, or deduplication explains a discrepancy without direct evidence for that mechanism.
+Record filesystem and APFS figures as estimates. `du -sk` is an allocated-block estimate for the measured path, not a logical-size measurement and not guaranteed physically unique savings. APFS clones, sparse files, snapshots, compression, File Provider placeholders, and purgeable space make size contextual. Do not claim cloning, hardlinking, compression, deduplication, or cloud eviction explains a discrepancy without direct evidence for that mechanism.
 
 Record the canonical current working directory with `pwd -P`. Detect relevant installed tools with `command -v`, and application bundles with Spotlight or application metadata. Detection is a lead, not proof that an ecosystem owns material space.
 
@@ -106,6 +109,13 @@ There is no fixed “important file size.” Space is space:
 - Run a finer pass after the large-item pass.
 - Stop lowering the floor only when another pass no longer changes explained bytes, actionable totals, or recommendations.
 
+Maintain two related but distinct ledgers while investigating:
+
+1. **Coverage ledger:** non-overlapping measured roots that reached a contextual conclusion.
+2. **Volume reconciliation ledger:** Data-volume usage compared with explained path allocation, native-owned allocation outside the path census, other users or volumes, inaccessible scope, documented OS-managed or purgeable space, and a residual unexplained gap.
+
+Do not force these ledgers to equal by inventing an APFS explanation. Label each measurement basis, disclose overlap risk, and make the residual gap an explicit investigation target.
+
 ### 3. Build forensic dossiers
 
 For each ranked finding or meaningful aggregate, establish:
@@ -115,6 +125,8 @@ For each ranked finding or meaningful aggregate, establish:
 - Modification and activity evidence
 - Installed and running state
 - Cache, dependency, build output, workflow state, user content, backup, runtime disk, volume, or unknown classification
+- Correct action class: keep, evict local copy, relocate, native prune, remove regenerable derivative, remove and redownload, reset workflow, guarded Trash move, synced/global deletion, or non-regenerable deletion
+- Action scope: this Mac, an external volume, the owning runtime, cloud storage, or all synchronized devices
 - Native inventory or dry-run result when available
 - Regeneration, redownload, rebuild, reset, or loss consequence
 - Realistic reclaimability rather than merely apparent directory size
@@ -137,7 +149,7 @@ Never use an unresolved glob as a cleanup target. The example above is read-only
 
 ### 4. Use ecosystem-native evidence
 
-For every detected ecosystem that materially contributes space, inspect it with its own inventory or dry-run when available. Examples include Homebrew, Xcode and simulators, Docker, OrbStack, Podman, Colima, language package managers, version managers, and project build systems.
+For every detected ecosystem that materially contributes space, inspect it with its own inventory or dry-run when available. Examples include Homebrew, Xcode and simulators, Docker, OrbStack, Podman, Colima, language package managers, version managers, project build systems, File Provider storage, local AI model stores, creative-media libraries, game libraries, virtual machines, browsers, and Apple-managed backups or attachments.
 
 Read current local `--help` before relying on a command surface. A native dry-run estimate is generally more meaningful than the apparent size of its broad cache root. Inspect what the dry-run actually selected before describing its composition or consequence; do not infer that a multi-gigabyte result is one small category because a few matching entries were visible.
 
@@ -169,6 +181,8 @@ Unless the user requested a narrow audit, continue until:
 - Major app-data entries have an evidence-backed owner hypothesis.
 - Development artifacts include project recency, rebuild source, worktree or clone context, and duplicate-counting risk in the analysis, while the report keeps project and content names private.
 - Opaque runtime data has a targeted next step rather than a generic warning.
+- The reconciliation ledger identifies explained, inaccessible, OS-managed, and residual unexplained storage without pretending path totals equal physical disk use.
+- Every material detected cloud, AI-model, creative-media, game, VM, browser, and Apple-managed data ecosystem received native inspection or a precise blocked reason.
 
 Unknown data remains protected, but “inspect later” is not a finished conclusion. State what was tried and exactly what evidence is missing.
 
@@ -181,6 +195,7 @@ Report:
 - Current disk state, areas measured, access gaps, and contextualized coverage
 - Largest non-overlapping explanations
 - Owner, activity, native evidence, confidence, consequence, and machine-specific recommendation; include the minimum relevant owner identifier in the interactive report
+- Action class, action scope, recovery route, preconditions, and whether deletion propagates to cloud or other devices
 - Smaller aggregates that materially add up
 - Potential, recommended, and approved totals separately
 - Context worth keeping despite its size
@@ -194,6 +209,12 @@ Show the finding IDs included in every total and make the arithmetic reconcile. 
 
 Group proposals by consequence: silent regeneration, redownload, rebuild, workflow reset, state loss possible, and non-regenerable. Let the user approve individual IDs or clearly named groups. Keep unknown findings out of cleanup groups.
 
+### Generate the opportunity report
+
+When the host supports rich in-conversation output, or when the user asks for a visual report, read [references/presentation.md](references/presentation.md) and generate a machine-specific opportunity map from the finalized finding records. Fall back to the same structured text report when rich output is unavailable. Never weaken investigation depth to produce the visual sooner.
+
+The visual is a view over the evidence, not a separate source of truth. It must show the reconciliation gap, encode action type separately from consequence, allow the user to explore findings, and preserve the exact IDs and arithmetic of the text report. Interactive plan selection prepares a scoped approval request; it must not run commands or imply approval by itself.
+
 ### Final report preflight
 
 Before emitting the report, stop and correct it unless every check passes:
@@ -204,6 +225,7 @@ Before emitting the report, stop and correct it unless every check passes:
 4. **Arithmetic check:** Coverage shows exact contextualized bytes divided by exact measured in-scope bytes. Potential, recommended, approved, staged, and reclaimed totals list their included IDs, use normalized units, are non-overlapping, and add exactly; alternatives show deltas. Every potential ID names a concrete supported action and preconditions; unknown, merely conditional, or non-regenerable data is excluded.
 5. **Safety check:** A read-only audit made no unapproved changes. Any approved temporary runtime start was read-only and restored to its recorded state. The report contains no direct-path `rm`, recursive deletion, broad-root cleanup, or unapproved execution language. Native cleanup commands are clearly proposed, not performed.
 6. **Restraint check:** Unknown, opaque, running, stateful, non-regenerable, and possible-duplicate data is not called safe or counted as recommended savings.
+7. **Presentation check:** Visual and text views use the same finding IDs, sizes, scopes, totals, and uncertainties. Bubble or area size is not shown as guaranteed recovery; interactions cannot execute cleanup or silently broaden scope.
 
 If the evidence or available reasoning is insufficient, produce a shorter accurate report with explicit gaps. Never fill a contract field with a guess merely to make the report look complete. Apply this check silently: do not print “preflight passed” or claim compliance; the report itself must demonstrate it.
 
@@ -211,7 +233,9 @@ If the evidence or available reasoning is insufficient, produce a shorter accura
 
 Read [references/cleanup-commands.md](references/cleanup-commands.md).
 
-For native cleanup, inspect or dry-run first. Put the finding ID, evidence, estimated size, consequence, exact command, and native warning in the same approval prompt so one informed response can authorize the action. Run each approved command separately. Never add container volumes to a general prune.
+For native cleanup, inspect or dry-run first. Put the finding ID, evidence, action class, scope, estimated size, consequence, recovery route, exact command or native UI route, preconditions, and native warning in the same approval prompt so one informed response can authorize the action. Run each approved command separately. Never add container volumes to a general prune.
+
+Prefer the owning ecosystem's supported action over filesystem manipulation. Use File Provider eviction when the user wants to retain a cloud original, supported relocation when valid data merely needs another volume, and native pruning for tool-owned caches or generated media. Distinguish local eviction from synced deletion and host-space recovery from internal or logical size.
 
 Treat cache pruning, unused-image removal, stopped-container removal, individual stateful-volume deletion, runtime factory reset, and runtime uninstallation as distinct actions. For a requested factory reset, read the installed runtime's current help and prefer its supported native reset command over deleting backing files manually. State whether the application and configuration remain installed, identify every data class the reset destroys, and require approval of that exact irreversible command.
 
