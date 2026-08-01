@@ -1,4 +1,4 @@
 interface:
   display_name: "TidyMac"
-  short_description: "Deeply investigate and visualize Mac storage"
-  default_prompt: "Use $tidymac to deeply investigate my Mac, reconcile what is using space, and present a safe cleanup plan with an interactive opportunity map when supported."
+  short_description: "Investigate Mac storage and recommend cleanup"
+  default_prompt: "Use $tidymac to investigate my Mac and give me a decisive, plain-language cleanup recommendation with an interactive opportunity map when supported."
