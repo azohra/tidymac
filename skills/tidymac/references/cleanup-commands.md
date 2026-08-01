@@ -11,12 +11,15 @@ Use only built-in macOS commands and tools already installed on the machine. Rea
 | Yarn | Resolve cache path and generation-specific help | Version-specific cache clean | Redownload; semantics differ by generation. |
 | pnpm | `pnpm store path`; `pnpm store status` | `pnpm store prune` | Future installs may redownload. |
 | pip | `pip cache info`; `pip cache list` | `pip cache purge` | Wheels and archives must be redownloaded or rebuilt. |
+| uv | `uv cache dir`; `uv cache prune --help`; supported dry-run if present | Prefer `uv cache prune`; use broad clean only as a separate action | Prune targets unused entries; broad clean forces more redownload or rebuild work. |
 | Conda | Supported dry-run for selected clean categories | Selected native clean | Caches can support reinstall or rollback workflows. |
 | Cargo | Measure registry, Git, and project targets separately | No blanket default | Downloads and rebuilds differ. |
 | Go | `go env GOCACHE GOMODCACHE` | Clean build and module caches separately | Rebuild versus redownload. |
 | RubyGems | `gem cleanup --dry-run` | `gem cleanup` | Removes installed old gem versions, not just downloads. |
 
 For any other installed manager, use its current local help. Never chain cleanup commands; preserve each result and partial failure independently.
+
+Cache paths are evidence, not cleanup interfaces. Prefer a manager's verify, garbage-collection, prune, or age-bounded operation over deleting its entire cache. When a manager documents its cache as self-healing, do not imply that a broad clean is routine maintenance.
 
 ## Version managers
 
@@ -45,6 +48,47 @@ Keep these actions separate:
 For OrbStack, read `orbctl reset --help` from the installed version. If it confirms that reset deletes all Linux and Docker data while preserving the application and configuration, propose `orbctl reset --yes` only when the user explicitly requests that exact scope. Do not manually delete the backing disk. Measure Data-volume free space immediately before and after the reset; report the observed change separately from Docker's earlier internal estimate.
 
 Put the exact command in the same prompt that asks for approval. Do not ask the user to approve a verbal scope and then reveal the irreversible command in a second round unless revalidation changed the action.
+
+## Cloud and File Provider actions
+
+Use the installed provider's Finder integration or native application action. Confirm local presence, completed synchronization, expected scope, and current wording immediately before proposing it.
+
+| Intent | Preferred action | Do not substitute |
+|---|---|---|
+| Keep remote, free local space | iCloud Remove Download, OneDrive Free up space, Dropbox/other provider Make online-only or equivalent | Deleting the file or provider database |
+| Keep local permanently | Provider's Always keep/download/pin action | Copying into provider internals |
+| Delete everywhere | Native deletion with propagation and retention warning | Calling it local cleanup |
+
+Provider eviction may be asynchronous. Measure host free space after the provider finishes, and keep apparent file size, local allocation, and observed recovery separate.
+
+## Local AI models
+
+Read installed help before relying on these surfaces:
+
+| Ecosystem | Inspect or preview | Candidate action | Guard |
+|---|---|---|---|
+| Ollama | `ollama list`; configured model location; local help | `ollama rm <exact-model>` | Remove through Ollama; never delete shared blobs or keys manually. |
+| Hugging Face | `hf cache ls`; supported `hf cache rm --dry-run` or `hf cache prune --dry-run` | Exact native revision removal or prune | Review detached revisions, incomplete downloads, shared blobs, and expected recovery. |
+| LM Studio | `lms ls`; app model directory; installed CLI help | Exact app or CLI model removal supported by the installed version | Preserve user-created models and confirm configured storage location. |
+
+For any other model manager, establish its owner and native removal semantics. Treat a model removal as redownload, not silent regeneration. Fine-tunes, adapters, datasets, embeddings, exports, and custom models require individual data-value assessment.
+
+## Creative media and libraries
+
+- Use Final Cut's generated-media controls for render files, optimized media, and proxy media. Confirm originals remain and state regeneration cost.
+- Use Premiere or the relevant Adobe application's media-cache controls; keep project files, originals, previews with unclear ownership, and shared team storage out of generic cache cleanup.
+- Use Logic or MainStage's supported sound-library relocation or optional-content management. Confirm the destination and application dependency on the attached volume.
+- Use an owning application's documented cache or generated-media action for other creative tools. Do not manipulate package or library internals directly.
+
+## Games, VMs, and application-owned data
+
+- Prefer a game launcher's uninstall or move-library operation. Keep saves, mods, workshop content, and cloud synchronization separate from the game payload.
+- Prefer a VM application's reclaim, compact, move, snapshot-management, or delete workflow. Verify the VM power state and show host-allocated space separately from guest free space and maximum capacity.
+- Prefer Finder's Manage Backups action for iPhone and iPad backups.
+- Prefer Mail, Messages, Photos, and browser-native controls for their managed data. Explain synchronized deletion, Recently Deleted, sign-out, offline-data, and regeneration consequences as applicable.
+- Prefer an application's bundled or vendor-provided uninstaller before related-file cleanup. Establish what the uninstaller preserves, including documents, shared libraries, licenses, and subscriptions.
+
+Native UI actions still require an approval card. Name the exact menu or control, the item or category it affects, the scope, expected recovery, and any follow-up such as emptying Recently Deleted. Do not automate UI while the Mac is locked or the owning application cannot present confirmation.
 
 ## Direct paths
 

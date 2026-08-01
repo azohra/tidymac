@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>TidyMac opportunity report</title>
+<style>
+  :root {
+    --tm-bg: light-dark(#f5f5f1, #171816);
+    --tm-panel: light-dark(#ffffff, #22231f);
+    --tm-panel-2: light-dark(#ecece6, #2d2e29);
+    --tm-ink: light-dark(#20221d, #f2f3ec);
+    --tm-muted: light-dark(#686b61, #adafa4);
+    --tm-line: light-dark(#d8d9d1, #40413b);
+    --tm-primary: light-dark(#22241f, #f1f2e9);
+    --tm-primary-ink: light-dark(#ffffff, #1b1c18);
+    --tm-evict: light-dark(#dbeafe, #18375b);
+    --tm-prune: light-dark(#dcfce7, #18462f);
+    --tm-generated: light-dark(#fef3c7, #574012);
+    --tm-relocate: light-dark(#ede9fe, #392962);
+    --tm-trash: light-dark(#e5e7eb, #393b3e);
+    --tm-delete: light-dark(#fee2e2, #592424);
+    --tm-keep: light-dark(#e7e7e2, #33342f);
+    --tm-unknown: light-dark(#f3f4f6, #282a2c);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 18px;
+    background: var(--tm-bg);
+    color: var(--tm-ink);
+    font-family: ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  }
+
+  button { font: inherit; }
+  .tm-shell {
+    width: min(1180px, 100%);
+    max-width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--tm-line);
+    border-radius: 20px;
+    background: var(--tm-bg);
+    box-shadow: 0 16px 44px color-mix(in srgb, var(--tm-ink) 10%, transparent);
+  }
+
+  .tm-toolbar,
+  .tm-brand,
+  .tm-state,
+  .tm-summary,
+  .tm-account-labels,
+  .tm-detail-head,
+  .tm-plan,
+  .tm-legend { display: flex; align-items: center; }
+
+  .tm-toolbar {
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--tm-line);
+    background: var(--tm-panel);
+  }
+
+  .tm-brand { gap: 9px; font-weight: 600; }
+  .tm-mark {
+    width: 27px;
+    height: 27px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--tm-primary);
+    color: var(--tm-primary-ink);
+  }
+
+  .tm-state { min-width: 0; gap: 7px; color: var(--tm-muted); font-size: .84rem; }
+  .tm-state span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tm-state-dot { width: 7px; height: 7px; border-radius: 50%; background: light-dark(#2f8f5b, #65cc8e); }
+  .tm-content { padding: 22px; }
+  .tm-summary { justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 18px; }
+  .tm-kicker, .tm-eyebrow {
+    color: var(--tm-muted);
+    font-size: .74rem;
+    font-weight: 600;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+  }
+
+  .tm-headline {
+    margin-top: 4px;
+    font-size: clamp(1.65rem, 4vw, 2.55rem);
+    line-height: 1.08;
+    letter-spacing: -.04em;
+    font-weight: 600;
+  }
+
+  .tm-headline span { color: var(--tm-muted); }
+  .tm-privacy { max-width: 270px; color: var(--tm-muted); text-align: right; font-size: .82rem; line-height: 1.4; overflow-wrap: anywhere; }
+  .tm-account { margin-bottom: 21px; }
+  .tm-account-labels { justify-content: space-between; gap: 12px; margin-bottom: 7px; color: var(--tm-muted); font-size: .79rem; }
+  .tm-account-labels strong { color: var(--tm-ink); font-weight: 600; }
+  .tm-account-track { display: flex; height: 10px; overflow: hidden; border-radius: 99px; background: var(--tm-panel-2); }
+  .tm-account-segment { height: 100%; min-width: 2px; }
+  .tm-account-explained { background: var(--tm-primary); }
+  .tm-account-inaccessible { background: var(--tm-trash); }
+  .tm-account-managed { background: var(--tm-relocate); }
+  .tm-account-residual { background: var(--tm-delete); }
+
+  .tm-main { min-width: 0; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .8fr); gap: 18px; align-items: stretch; }
+  .tm-map,
+  .tm-detail,
+  .tm-plan {
+    min-width: 0;
+    border: 1px solid var(--tm-line);
+    border-radius: 17px;
+    background: var(--tm-panel);
+  }
+
+  .tm-map { min-height: 410px; padding: 17px; display: flex; flex-direction: column; }
+  .tm-bubbles { flex: 1; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 2px; padding: 14px 0; }
+  .tm-bubble {
+    width: min(var(--tm-bubble-size), 38vw);
+    aspect-ratio: 1;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 1px solid color-mix(in srgb, var(--tm-ink) 12%, transparent);
+    border-radius: 50%;
+    background: var(--tm-action-color);
+    color: var(--tm-ink);
+    cursor: pointer;
+    text-align: center;
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+
+  .tm-bubble:hover { transform: scale(1.025); }
+  .tm-bubble:focus-visible { outline: 3px solid var(--tm-ink); outline-offset: 3px; }
+  .tm-bubble[aria-pressed="true"] { box-shadow: 0 0 0 4px color-mix(in srgb, var(--tm-ink) 13%, transparent); transform: scale(1.035); }
+  .tm-bubble strong { max-width: 90%; font-size: clamp(.8rem, 1.8vw, 1rem); font-weight: 600; overflow-wrap: anywhere; }
+  .tm-bubble span { margin-top: 4px; color: var(--tm-muted); font-size: .75rem; }
+  .tm-map-note { color: var(--tm-muted); font-size: .75rem; }
+  .tm-empty { margin: auto; max-width: 330px; color: var(--tm-muted); text-align: center; line-height: 1.5; }
+
+  .tm-detail { min-height: 410px; padding: 18px; display: flex; flex-direction: column; }
+  .tm-detail-head { justify-content: space-between; gap: 12px; }
+  .tm-action-pill { padding: 5px 9px; border-radius: 99px; background: var(--tm-keep); font-size: .74rem; font-weight: 600; }
+  .tm-detail-size { margin-top: 22px; font-size: clamp(2rem, 6vw, 3.5rem); line-height: .96; letter-spacing: -.055em; font-weight: 600; }
+  .tm-size-note { margin-top: 5px; color: var(--tm-muted); font-size: .75rem; }
+  .tm-detail-title { margin: 8px 0 16px; font-size: 1.14rem; font-weight: 600; }
+  .tm-facts { margin: 0; display: grid; gap: 10px; }
+  .tm-fact { padding-top: 10px; border-top: 1px solid var(--tm-line); }
+  .tm-fact dt { margin-bottom: 3px; color: var(--tm-muted); font-size: .74rem; }
+  .tm-fact dd { margin: 0; font-size: .87rem; line-height: 1.4; overflow-wrap: anywhere; }
+  .tm-detail-actions { margin-top: auto; padding-top: 16px; }
+
+  .tm-toggle,
+  .tm-copy {
+    appearance: none;
+    border: 1px solid var(--tm-line);
+    border-radius: 11px;
+    padding: 10px 12px;
+    color: var(--tm-ink);
+    background: var(--tm-panel-2);
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .tm-toggle { width: 100%; }
+  .tm-copy { white-space: nowrap; background: var(--tm-primary); border-color: var(--tm-primary); color: var(--tm-primary-ink); }
+  .tm-toggle:focus-visible, .tm-copy:focus-visible { outline: 3px solid var(--tm-ink); outline-offset: 2px; }
+  .tm-copy:disabled, .tm-toggle:disabled { opacity: .43; cursor: default; }
+  .tm-plan { justify-content: space-between; gap: 16px; margin-top: 18px; padding: 14px 16px; }
+  .tm-plan-value { font-weight: 600; }
+  .tm-plan-sub { margin-top: 2px; color: var(--tm-muted); font-size: .77rem; }
+  .tm-legend { flex-wrap: wrap; gap: 12px; margin-top: 13px; color: var(--tm-muted); font-size: .73rem; }
+  .tm-key { display: inline-flex; align-items: center; gap: 5px; }
+  .tm-swatch { width: 9px; height: 9px; border-radius: 50%; background: var(--tm-key-color); }
+  .tm-copy-result { margin-top: 8px; color: var(--tm-muted); font-size: .75rem; }
+
+  @media (max-width: 690px) {
+    body { padding: 0; }
+    .tm-shell { border-radius: 0; border-left: 0; border-right: 0; }
+    .tm-content { padding: 16px; }
+    .tm-summary { flex-direction: column; align-items: flex-start; }
+    .tm-privacy { max-width: none; text-align: left; }
+    .tm-account-labels { align-items: flex-start; flex-direction: column; }
+    .tm-main { grid-template-columns: 1fr; }
+    .tm-map { min-height: 350px; }
+    .tm-detail { min-height: 0; }
+    .tm-plan { align-items: stretch; flex-direction: column; }
+    .tm-copy { width: 100%; }
+    .tm-detail-head { align-items: flex-start; flex-wrap: wrap; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { .tm-bubble { transition: none; } }
+</style>
+</head>
+<body>
+<main class="tm-shell">
+  <header class="tm-toolbar">
+    <div class="tm-brand"><span class="tm-mark" aria-hidden="true">T</span><span>TidyMac</span></div>
+    <div class="tm-state"><span class="tm-state-dot" aria-hidden="true"></span><span id="tm-state">Report template</span></div>
+  </header>
+
+  <div class="tm-content">
+    <section class="tm-summary" aria-labelledby="tm-headline">
+      <div>
+        <div class="tm-kicker">Your storage story</div>
+        <div class="tm-headline" id="tm-headline">Waiting for <span>scan findings</span></div>
+      </div>
+      <div class="tm-privacy" id="tm-privacy">This bundled shell contains no machine data. A completed audit embeds only the identifiers needed for its selected privacy mode.</div>
+    </section>
+
+    <section class="tm-account" aria-label="Storage reconciliation">
+      <div class="tm-account-labels"><span id="tm-account-main"><strong>No reconciliation data</strong></span><span id="tm-account-gap">Residual unknown</span></div>
+      <div class="tm-account-track" id="tm-account-track"></div>
+    </section>
+
+    <div class="tm-main">
+      <section class="tm-map" aria-labelledby="tm-map-title">
+        <div class="tm-eyebrow" id="tm-map-title">Opportunity map</div>
+        <div class="tm-bubbles" id="tm-bubbles"><p class="tm-empty">Embed finalized TidyMac finding records to generate this report.</p></div>
+        <div class="tm-map-note">Bubble size = observed local allocation · color and label = proposed action</div>
+      </section>
+
+      <aside class="tm-detail" aria-live="polite">
+        <div class="tm-detail-head"><span class="tm-eyebrow">Selected finding</span><span class="tm-action-pill" id="tm-action">No action</span></div>
+        <div class="tm-detail-size" id="tm-size">—</div>
+        <div class="tm-size-note" id="tm-size-note">Observed local allocation</div>
+        <div class="tm-detail-title" id="tm-title">Select an opportunity</div>
+        <dl class="tm-facts">
+          <div class="tm-fact"><dt>Why it exists</dt><dd id="tm-why">No finding selected.</dd></div>
+          <div class="tm-fact"><dt>Recommended route</dt><dd id="tm-route">Investigation must finish before a route appears here.</dd></div>
+          <div class="tm-fact"><dt>Scope and consequence</dt><dd id="tm-consequence">Unknown.</dd></div>
+          <div class="tm-fact"><dt>Evidence and recovery</dt><dd id="tm-evidence">Unknown.</dd></div>
+        </dl>
+        <div class="tm-detail-actions"><button class="tm-toggle" id="tm-toggle" type="button" disabled>Add to proposed plan</button></div>
+      </aside>
+    </div>
+
+    <section class="tm-plan" aria-label="Proposed cleanup plan">
+      <div><div class="tm-plan-value" id="tm-plan-value">Nothing selected</div><div class="tm-plan-sub" id="tm-plan-sub">Selection prepares previews; it is not cleanup approval.</div><div class="tm-copy-result" id="tm-copy-result" aria-live="polite"></div></div>
+      <button class="tm-copy" id="tm-copy" type="button" disabled>Copy plan request</button>
+    </section>
+
+    <div class="tm-legend" id="tm-legend" aria-label="Action legend"></div>
+  </div>
+</main>
+
+<!-- Replace only this JSON object with finalized, HTML-safe JSON. Escape <, >, and & as Unicode sequences. -->
+<script id="tidymac-report-data" type="application/json">
+{
+  "report_title": "",
+  "state": "Report template",
+  "privacy_note": "",
+  "reviewable_bytes": 0,
+  "reconciliation": {
+    "used_bytes": 0,
+    "explained_bytes": 0,
+    "inaccessible_bytes": 0,
+    "os_managed_bytes": 0,
+    "residual_bytes": 0
+  },
+  "findings": []
+}
+</script>
+<script>
+(() => {
+  'use strict';
+  const dataElement = document.getElementById('tidymac-report-data');
+  let report;
+  try { report = JSON.parse(dataElement.textContent); }
+  catch (_error) { return; }
+
+  const actionStyles = {
+    'evict': ['Evict locally', 'var(--tm-evict)'],
+    'native-prune': ['Native prune', 'var(--tm-prune)'],
+    'remove-generated': ['Remove generated copy', 'var(--tm-generated)'],
+    'relocate': ['Relocate', 'var(--tm-relocate)'],
+    'trash': ['Move to Trash', 'var(--tm-trash)'],
+    'synced-delete': ['Delete everywhere', 'var(--tm-delete)'],
+    'permanent-delete': ['Permanent delete', 'var(--tm-delete)'],
+    'redownload': ['Remove and redownload', 'var(--tm-prune)'],
+    'reset': ['Reset workflow', 'var(--tm-delete)'],
+    'keep': ['Keep', 'var(--tm-keep)'],
+    'unknown': ['Investigate', 'var(--tm-unknown)']
+  };
+
+  const validFindings = Array.isArray(report.findings)
+    ? report.findings.filter((item) => item && typeof item.id === 'string' && Number.isFinite(Number(item.allocated_bytes)))
+    : [];
+  const selected = new Set();
+  let activeId = validFindings[0]?.id || null;
+
+  const byId = (id) => document.getElementById(id);
+  const state = byId('tm-state');
+  const headline = byId('tm-headline');
+  const privacy = byId('tm-privacy');
+  const accountMain = byId('tm-account-main');
+  const accountGap = byId('tm-account-gap');
+  const accountTrack = byId('tm-account-track');
+  const bubbles = byId('tm-bubbles');
+  const detailAction = byId('tm-action');
+  const detailSize = byId('tm-size');
+  const detailSizeNote = byId('tm-size-note');
+  const detailTitle = byId('tm-title');
+  const detailWhy = byId('tm-why');
+  const detailRoute = byId('tm-route');
+  const detailConsequence = byId('tm-consequence');
+  const detailEvidence = byId('tm-evidence');
+  const toggle = byId('tm-toggle');
+  const planValue = byId('tm-plan-value');
+  const planSub = byId('tm-plan-sub');
+  const copy = byId('tm-copy');
+  const copyResult = byId('tm-copy-result');
+  const legend = byId('tm-legend');
+
+  function bytes(value) {
+    const amount = Math.max(0, Number(value) || 0);
+    if (!amount) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const index = Math.min(Math.floor(Math.log(amount) / Math.log(1000)), units.length - 1);
+    return `${(amount / Math.pow(1000, index)).toFixed(index > 2 ? 1 : 0)} ${units[index]}`;
+  }
+
+  function actionInfo(action) { return actionStyles[action] || actionStyles.unknown; }
+  function text(value, fallback) { return typeof value === 'string' && value.trim() ? value.trim() : fallback; }
+
+  function renderReconciliation() {
+    const r = report.reconciliation || {};
+    const used = Math.max(0, Number(r.used_bytes) || 0);
+    const parts = [
+      ['tm-account-explained', Number(r.explained_bytes) || 0, 'Explained'],
+      ['tm-account-inaccessible', Number(r.inaccessible_bytes) || 0, 'Inaccessible'],
+      ['tm-account-managed', Number(r.os_managed_bytes) || 0, 'OS-managed'],
+      ['tm-account-residual', Number(r.residual_bytes) || 0, 'Residual']
+    ];
+    accountTrack.replaceChildren();
+    if (!used) return;
+    accountMain.innerHTML = `<strong>${bytes(r.explained_bytes)} explained</strong> of ${bytes(used)} used`;
+    accountGap.textContent = `${bytes(r.residual_bytes)} residual gap`;
+    parts.forEach(([className, value, label]) => {
+      if (value <= 0) return;
+      const segment = document.createElement('span');
+      segment.className = `tm-account-segment ${className}`;
+      segment.style.width = `${Math.max(0, Math.min(100, value / used * 100))}%`;
+      segment.setAttribute('aria-label', `${label}: ${bytes(value)}`);
+      accountTrack.append(segment);
+    });
+  }
+
+  function renderBubbles() {
+    if (!validFindings.length) return;
+    bubbles.replaceChildren();
+    const sizes = validFindings.map((item) => Math.max(0, Number(item.allocated_bytes)));
+    const largest = Math.max(...sizes, 1);
+    validFindings.forEach((item) => {
+      const button = document.createElement('button');
+      const [actionLabel, color] = actionInfo(item.action);
+      const ratio = Math.sqrt(Math.max(0, Number(item.allocated_bytes)) / largest);
+      const size = Math.round(92 + ratio * 104);
+      button.type = 'button';
+      button.className = 'tm-bubble';
+      button.dataset.id = item.id;
+      button.style.setProperty('--tm-bubble-size', `${size}px`);
+      button.style.setProperty('--tm-action-color', color);
+      button.setAttribute('aria-pressed', String(item.id === activeId));
+      button.setAttribute('aria-label', `${text(item.label, item.id)}, ${bytes(item.allocated_bytes)}, ${actionLabel}`);
+      const label = document.createElement('strong');
+      label.textContent = text(item.label, item.id);
+      const amount = document.createElement('span');
+      amount.textContent = bytes(item.allocated_bytes);
+      button.append(label, amount);
+      button.addEventListener('click', () => { activeId = item.id; renderDetail(); });
+      bubbles.append(button);
+    });
+  }
+
+  function renderDetail() {
+    const item = validFindings.find((finding) => finding.id === activeId);
+    bubbles.querySelectorAll('.tm-bubble').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.id === activeId)));
+    if (!item) return;
+    const [actionLabel, color] = actionInfo(item.action);
+    detailAction.textContent = actionLabel;
+    detailAction.style.background = color;
+    detailSize.textContent = bytes(item.allocated_bytes);
+    detailSizeNote.textContent = Number.isFinite(Number(item.expected_host_recovery))
+      ? `Observed local allocation · expected host recovery ${bytes(item.expected_host_recovery)}`
+      : 'Observed local allocation · host recovery not yet established';
+    detailTitle.textContent = text(item.label, item.id);
+    detailWhy.textContent = text(item.why, 'No explanation recorded.');
+    detailRoute.textContent = `${text(item.recommendation, 'No action established.')} · Precondition: ${text(item.preconditions, 'none established')}`;
+    detailConsequence.textContent = `${text(item.scope, 'Scope unknown')} · ${text(item.consequence, 'Consequence unknown')}`;
+    detailEvidence.textContent = `${text(item.evidence, 'Evidence not recorded')} · Confidence: ${text(item.confidence, 'unknown')} · Recovery: ${text(item.recovery, 'unknown')}`;
+    toggle.disabled = item.action === 'keep' || item.action === 'unknown';
+    toggle.textContent = selected.has(item.id) ? 'Remove from proposed plan' : 'Add to proposed plan';
+  }
+
+  function renderPlan() {
+    const ids = Array.from(selected);
+    const total = ids.reduce((sum, id) => sum + Number(validFindings.find((item) => item.id === id)?.allocated_bytes || 0), 0);
+    if (!ids.length) {
+      planValue.textContent = 'Nothing selected';
+      planSub.textContent = 'Selection prepares previews; it is not cleanup approval.';
+      copy.disabled = true;
+      copyResult.textContent = '';
+      return;
+    }
+    planValue.textContent = `${bytes(total)} selected across ${ids.length} ${ids.length === 1 ? 'finding' : 'findings'}`;
+    planSub.textContent = `IDs: ${ids.join(', ')} · Exact actions still require revalidation and approval.`;
+    copy.disabled = false;
+  }
+
+  function renderLegend() {
+    const actions = [...new Set(validFindings.map((item) => item.action))];
+    legend.replaceChildren();
+    actions.forEach((action) => {
+      const [label, color] = actionInfo(action);
+      const key = document.createElement('span');
+      key.className = 'tm-key';
+      const swatch = document.createElement('span');
+      swatch.className = 'tm-swatch';
+      swatch.style.setProperty('--tm-key-color', color);
+      const name = document.createElement('span');
+      name.textContent = label;
+      key.append(swatch, name);
+      legend.append(key);
+    });
+  }
+
+  if (validFindings.length) {
+    state.textContent = text(report.state, 'Scan complete');
+    const reviewable = Number(report.reviewable_bytes) || validFindings.reduce((sum, item) => sum + Number(item.allocated_bytes || 0), 0);
+    headline.replaceChildren(document.createTextNode(`${bytes(reviewable)} `));
+    const tail = document.createElement('span');
+    tail.textContent = text(report.report_title, 'worth understanding');
+    headline.append(tail);
+    privacy.textContent = text(report.privacy_note, 'Only the identifiers needed to explain and approve findings are shown.');
+    renderReconciliation();
+    renderBubbles();
+    renderDetail();
+    renderLegend();
+  }
+
+  toggle.addEventListener('click', () => {
+    if (!activeId || toggle.disabled) return;
+    if (selected.has(activeId)) selected.delete(activeId); else selected.add(activeId);
+    renderDetail();
+    renderPlan();
+  });
+
+  copy.addEventListener('click', async () => {
+    const ids = Array.from(selected);
+    if (!ids.length) return;
+    const request = `Prepare exact, consequence-aware previews for TidyMac findings ${ids.join(', ')}. Revalidate them and do not clean anything yet.`;
+    try {
+      await navigator.clipboard.writeText(request);
+      copyResult.textContent = 'Plan request copied. Paste it back into the TidyMac conversation.';
+    } catch (_error) {
+      copyResult.textContent = request;
+    }
+  });
+})();
+</script>
+</body>
+</html>
