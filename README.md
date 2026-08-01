@@ -27,7 +27,7 @@ Using the Skills installer is convenient:
 npx skills add azohra/tidymac
 ```
 
-The installer clones the GitHub repository, discovers `skills/tidymac`, and copies that complete directory into the selected host. TidyMac is entirely self-contained Markdown plus host UI metadata: there are no helper programs, runtime libraries, or later code downloads.
+The installer clones the GitHub repository, discovers `skills/tidymac`, and copies that complete directory into the selected host. TidyMac is entirely self-contained Markdown, host UI metadata, and one standalone report shell: there are no helper programs, runtime libraries, or later code downloads.
 
 The installer can target Claude Code, Codex, or both. To select both explicitly:
 
@@ -43,7 +43,7 @@ cp -R /path/to/tidymac/skills/tidymac "$HOME/.claude/skills/tidymac"
 cp -R /path/to/tidymac/skills/tidymac "$HOME/.agents/skills/tidymac"
 ```
 
-Use the first destination for Claude Code, the second for Codex, or both. That seven-file skill folder is the whole runtime product.
+Use the first destination for Claude Code, the second for Codex, or both. That nine-file skill folder is the whole runtime product.
 
 Invoke the installed skill with the syntax used by your host:
 
@@ -68,6 +68,11 @@ A bare invocation runs a read-only audit. TidyMac presents a cleanup plan before
 - Docker Desktop, OrbStack, Podman, and Colima
 - Package-manager caches and developer toolchains
 - Old runtime versions
+- Local AI models and revisions from detected tools such as Ollama, Hugging Face, and LM Studio
+- Locally downloaded cloud files from detected File Provider services
+- Generated creative media and relocatable sound or media libraries
+- Game libraries and virtual-machine storage
+- Mail, Messages, Photos, browser, and Finder-managed backup storage through their native owners
 - Regenerable project artifacts such as `node_modules`, `target`, `.build`, `.next`, and virtual environments
 - Evidence of app data whose owner is no longer obvious
 - iOS device backups, Trash, installers, and other large contextual storage
@@ -87,12 +92,23 @@ That distinction prevents a common cleanup mistake: treating “cache” as syno
 
 Findings are grouped by consequence so you can approve cheap cleanup without also agreeing to long rebuilds or loss of historical state.
 
+TidyMac also distinguishes the right kind of action. Useful data may be better **evicted locally**, **relocated**, or **pruned by its owning tool** rather than deleted. Cloud deletion, workflow reset, Trash staging, and permanent deletion remain separate scopes.
+
+## Generated opportunity map
+
+When the host supports rich output, TidyMac can turn a completed investigation into a machine-specific interactive opportunity map. Space is sized by observed local allocation and grouped by the correct action—evict, native prune, remove generated media, relocate, Trash, or delete.
+
+Selecting a finding explains why it exists, the evidence, confidence, scope, consequence, recovery route, and expected host-space effect. Users can assemble a proposed plan, but the visual never executes cleanup or replaces the exact approval prompt.
+
+The map is generated from the same finding records and reconciled arithmetic as the text report. It is optional: hosts without an artifact surface receive the complete structured report, and a requested standalone report uses the bundled self-contained HTML shell with no external assets or runtime dependencies.
+
 ## Safety model
 
 - Auditing is the default. Nothing is silently cleaned.
 - Every mutation is tied to an approved finding or command.
 - Unknown findings are researched rather than guessed at.
 - Interactive reports reveal the minimum relevant owner identifiers needed to explain a finding or approve an action; shareable and public reports redact personal and project identifiers throughout.
+- Visual selections prepare a scoped plan but never count as cleanup approval.
 - Narrow manifests and configuration fields may be inspected when they establish ownership or regeneration. Personal content, credentials, secret-bearing logs, databases, and archives require explicit content-level permission.
 - “Unmatched” app data is never automatically called orphaned.
 - The current project and its ancestors are excluded from path cleanup.
@@ -115,6 +131,8 @@ Claude or Codex uses built-in macOS commands and tools already installed on the 
 
 The cleanup contract requires an exact plan and explicit approval. Direct-path actions are revalidated immediately before a recoverable move to Trash. Native cleanup commands are previewed when possible and approved individually.
 
+TidyMac maintains a coverage ledger and a separate storage-reconciliation ledger. Unexplained, inaccessible, provider-managed, other-user, and OS-managed space remains visible rather than being mislabeled as junk or forced into a false total.
+
 ## Example requests
 
 ```text
@@ -122,6 +140,9 @@ The cleanup contract requires an exact plan and explicit approval. Direct-path a
 $tidymac
 Audit my Mac, but don't clean anything.
 Focus on Xcode and old simulators.
+Show me an interactive opportunity map after the audit.
+Find local AI models I no longer need, but don't remove anything.
+Show cloud files I can evict locally without deleting remotely.
 Find stale build artifacts outside this project.
 Investigate whether these large Application Support folders are leftovers.
 Clean only the low-impact items I approve.
