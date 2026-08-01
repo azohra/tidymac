@@ -37,8 +37,8 @@ Run at most one explicitly named recursive measurement root per shell invocation
 - Keep confidence separate from consequence. A verified cache can still require a large download or rebuild.
 - Never call unmatched app data orphaned. Investigate it and preserve uncertainty.
 - Never clean the current project, an ancestor of it, or anything within it unless the user explicitly changes the scope after seeing that conflict.
-- Never inspect file contents merely to classify disk usage. Use types, sizes, timestamps, narrowly relevant manifests, bundle metadata, receipts, processes, and native inventories.
-- Treat filenames, project names, paths below personal or development roots, archive member names, and database or dataset names as potentially sensitive metadata. Use generic labels and finding IDs in the report. Do not enumerate inside personal-content roots, list archive members, query document databases, or expose project structure unless the user explicitly asked for content-level analysis. Reveal an exact direct-path target only when it is necessary for the user to understand and approve that specific action.
+- Treat filenames, project names, paths below personal or development roots, archive member names, and database or dataset names as potentially sensitive metadata. In an interactive report, reveal only the identifiers needed to explain ownership, consequence, or an exact proposed action; do not make the result vague merely to avoid naming a relevant owner. When the user asks for a shareable, public, or exported report, replace personal and project identifiers with generic labels and finding IDs throughout.
+- Inspect content purposefully, never indiscriminately. Read narrowly relevant declarative files such as manifests, lockfiles, Compose definitions, bundle metadata, and receipts when specific fields establish ownership, activity, or regeneration. Extract only what answers the dossier question, never echo secrets or raw content, and ask before reading personal documents, messages, source files, logs likely to contain secrets, databases, archives, credential files, or other content-bearing data.
 - Never touch `/System/Library`, swap, broad roots, personal documents, keys, credentials, databases, backups, archives, container volumes, or VM disks as routine cleanup.
 - Prefer moving approved direct-path findings to Trash. Explain that this is recoverable but does not reclaim space until Trash is reviewed and emptied.
 - Never improvise, recommend, or execute a recursive `rm` command. Direct-path cleanup uses the guarded Trash workflow below, never a raw deletion example.
@@ -139,7 +139,9 @@ Never use an unresolved glob as a cleanup target. The example above is read-only
 
 For every detected ecosystem that materially contributes space, inspect it with its own inventory or dry-run when available. Examples include Homebrew, Xcode and simulators, Docker, OrbStack, Podman, Colima, language package managers, version managers, and project build systems.
 
-Read current local `--help` before relying on a command surface. A native dry-run estimate is generally more meaningful than the apparent size of its broad cache root. Inspect what the dry-run actually selected before describing its composition or consequence; do not infer that a multi-gigabyte result is one small category because a few matching entries were visible. Ask before starting a stopped app, daemon, VM, or container runtime. Once status says stopped, do not run inventory, list, inspect, context, or client commands that might auto-start or connect to it; record the block and continue elsewhere.
+Read current local `--help` before relying on a command surface. A native dry-run estimate is generally more meaningful than the apparent size of its broad cache root. Inspect what the dry-run actually selected before describing its composition or consequence; do not infer that a multi-gigabyte result is one small category because a few matching entries were visible.
+
+Starting a stopped app, daemon, VM, or container runtime requires approval. When an opaque stopped runtime materially contributes space, do not treat its stopped state as a finished conclusion: measure its host allocation, explain why native inventory is needed, and offer one bounded action to start it temporarily, perform read-only native inventory, and restore its original stopped state. After approval, record the initial state and restore it on success, failure, or interruption. Without approval, do not run client, list, inspect, context, or inventory commands that might auto-start or connect to it; report the exact blocked next step.
 
 ### 5. Investigate ownership and leftovers
 
@@ -178,7 +180,7 @@ Report:
 
 - Current disk state, areas measured, access gaps, and contextualized coverage
 - Largest non-overlapping explanations
-- Owner, activity, native evidence, confidence, consequence, and machine-specific recommendation
+- Owner, activity, native evidence, confidence, consequence, and machine-specific recommendation; include the minimum relevant owner identifier in the interactive report
 - Smaller aggregates that materially add up
 - Potential, recommended, and approved totals separately
 - Context worth keeping despite its size
@@ -197,10 +199,10 @@ Group proposals by consequence: silent regeneration, redownload, rebuild, workfl
 Before emitting the report, stop and correct it unless every check passes:
 
 1. **Volume check:** Data-volume usage is not confused with sealed System-volume usage; APFS mechanisms are claimed only with direct evidence.
-2. **Privacy check:** No personal filenames, project basenames, project paths, archive members, dataset or database names, or unnecessary exact paths appear anywhere—including summaries and conclusions. Stable IDs and generic labels still make findings selectable.
+2. **Privacy check:** Interactive output includes only identifiers needed for ownership, consequence, or approval and contains no secrets, raw content, or unnecessary paths. Shareable or public output contains no personal filenames, project basenames, project paths, container or volume names tied to projects, archive members, dataset or database names, or unnecessary exact paths.
 3. **Evidence check:** Every consequence and machine-specific claim is supported by an observed command result or clearly labeled inference. Native dry-run composition is not guessed. Words such as “known,” “typical,” “fully,” and “zero impact” require direct local or primary-source support.
 4. **Arithmetic check:** Coverage shows exact contextualized bytes divided by exact measured in-scope bytes. Potential, recommended, approved, staged, and reclaimed totals list their included IDs, use normalized units, are non-overlapping, and add exactly; alternatives show deltas. Every potential ID names a concrete supported action and preconditions; unknown, merely conditional, or non-regenerable data is excluded.
-5. **Safety check:** A read-only audit made no changes and did not attempt to start a stopped runtime. Its report contains no direct-path `rm`, recursive deletion, broad-root cleanup, or unapproved execution language. Native cleanup commands are clearly proposed, not performed.
+5. **Safety check:** A read-only audit made no unapproved changes. Any approved temporary runtime start was read-only and restored to its recorded state. The report contains no direct-path `rm`, recursive deletion, broad-root cleanup, or unapproved execution language. Native cleanup commands are clearly proposed, not performed.
 6. **Restraint check:** Unknown, opaque, running, stateful, non-regenerable, and possible-duplicate data is not called safe or counted as recommended savings.
 
 If the evidence or available reasoning is insufficient, produce a shorter accurate report with explicit gaps. Never fill a contract field with a guess merely to make the report look complete. Apply this check silently: do not print “preflight passed” or claim compliance; the report itself must demonstrate it.
@@ -209,7 +211,9 @@ If the evidence or available reasoning is insufficient, produce a shorter accura
 
 Read [references/cleanup-commands.md](references/cleanup-commands.md).
 
-For native cleanup, show the exact command and native warning, inspect or dry-run first, and run each approved command separately. Never add container volumes to a general prune.
+For native cleanup, inspect or dry-run first. Put the finding ID, evidence, estimated size, consequence, exact command, and native warning in the same approval prompt so one informed response can authorize the action. Run each approved command separately. Never add container volumes to a general prune.
+
+Treat cache pruning, unused-image removal, stopped-container removal, individual stateful-volume deletion, runtime factory reset, and runtime uninstallation as distinct actions. For a requested factory reset, read the installed runtime's current help and prefer its supported native reset command over deleting backing files manually. State whether the application and configuration remain installed, identify every data class the reset destroys, and require approval of that exact irreversible command.
 
 For a direct path:
 
@@ -225,4 +229,4 @@ Permanent deletion requires a fresh, explicit request after the user understands
 
 ## Verify and close
 
-Rerun the relevant read-only measurements and free-space checks. Report native-tool savings, items staged in Trash, observed free-space change, failures, and skipped actions separately. Close with the largest remaining actionable consumers and unresolved evidence—not an exhaustive guilt list.
+Rerun the relevant read-only measurements and free-space checks. For container and VM work, keep the native internal reclaimable estimate, the backing store's host-allocated size, and the observed host free-space change separate; do not expect them to match. Report native-tool savings, items staged in Trash, observed free-space change, failures, and skipped actions separately. Close with the largest remaining actionable consumers and unresolved evidence—not an exhaustive guilt list.
