@@ -34,6 +34,7 @@ Do not use an auto-clean tier. A bare skill invocation authorizes read-only audi
 - Research unfamiliar findings with current primary sources. Report the source and the remaining uncertainty.
 - Prefer a native tool's dry-run or inventory command before its cleanup command.
 - Never characterize failure to find an owner as proof that data is orphaned.
+- Call a container volume attached or referenced when that is what native metadata proves. Do not use “protected” or “active” as shorthand for a running workload.
 
 ## Reclaimable totals
 
@@ -47,6 +48,7 @@ Do not use an auto-clean tier. A bare skill invocation authorizes read-only audi
 - Define `potential` as evidence-backed reclaimable space with a concrete action and known consequence. For every included ID, name the supported native cleanup command or the exact guarded Trash workflow, plus any required stopped-app or stopped-service precondition. A label such as “conditional,” “user decision,” “removable,” or “regenerable-looking” is not a concrete action. Exclude the ID until the action and preconditions are established. Also exclude non-regenerable history/content, context-only data, opaque runtime disks, and stores whose reclaimable fraction is wholly unknown.
 - Describe measured sizes as allocated-size estimates. APFS clones, snapshots, sparse files, compression, and purgeable space can make apparent and physically recoverable sizes differ.
 - Use before/after free-space measurements as the final authority, while noting that background activity can change them.
+- For VM-backed runtimes, show native internal reclaimability, host-allocated backing-store size, and observed host recovery separately. Never substitute the sparse disk's logical capacity for any of them.
 
 If the displayed candidate rows do not exactly sum to their stated total, fix the rows or the total before reporting. A prose range does not excuse arithmetic whose lower or upper bound cannot be reproduced.
 

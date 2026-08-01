@@ -21,7 +21,7 @@ For each queued finding or meaningful aggregate, seek:
 | Field | Evidence |
 |---|---|
 | Identity and owner | Bundle identifier, app metadata, package receipt, CLI path, launch item, process, manifest, or primary documentation |
-| Contents | Safe top-level categories, types, allocated-size estimates, and metadata without exposing private basenames or opening personal content |
+| Contents | Safe top-level categories, types, allocated-size estimates, metadata, and narrowly selected manifest fields without opening personal content |
 | Activity | Directory and child modification times, project history, running state, or native last-used metadata |
 | Installed state | Application bundle, cask/formula, package-manager record, version-manager inventory, plugin, extension, or service |
 | Data class | Cache, dependency, build output, workflow state, user-created content, backup, runtime disk, volume, or unknown |
@@ -41,7 +41,9 @@ Prefer evidence in this order:
 5. Exact-path or identifier research from current primary sources when available
 6. User recognition when machine evidence cannot establish intent or data value
 
-Use built-in `stat`, `du`, `mdfind`, `mdls`, `plutil`, `pkgutil`, `launchctl`, `pgrep`, and `lsof` narrowly. Exact names may be needed internally to correlate ownership, but do not repeat personal or project basenames in the user-facing report. Do not read file contents, recursively print personal filenames, list archive members, query content databases, or expose project, database, dataset, archive, and configuration names merely to classify storage.
+Use built-in `stat`, `du`, `mdfind`, `mdls`, `plutil`, `pkgutil`, `launchctl`, `pgrep`, and `lsof` narrowly. Read known declarative files only when selected fields answer a specific ownership, activity, or regeneration question. Do not dump files, echo secrets, recursively print personal filenames, list archive members, or query content databases merely to classify storage. Ask before content-level inspection of personal documents, messages, source files, secret-bearing logs or configuration, databases, archives, and credentials.
+
+In the live interactive report, include a relevant app, package, container, volume, or project identifier when the user needs it to understand the finding or approve an action. Avoid unnecessary paths and structure. If the user asks for output that will be shared, published, filed as an issue, or committed to a public repository, sanitize personal and project identifiers throughout.
 
 The absence of a process does not prove abandonment. Directory modification time is a clue, not proof of last use.
 
@@ -56,7 +58,7 @@ When an ecosystem materially contributes space, use the installed tool's current
 - Package managers: cache location, installed versions, and supported verify, info, list, or dry-run commands
 - Version managers: installed versions plus project version files
 
-A dry-run estimate supersedes the apparent size of a broad cache root when estimating likely recovery. Describe only categories demonstrated by the dry-run output; a few visible entries do not explain the entire total. Starting an app, daemon, VM, or runtime is a state change; ask first and continue elsewhere.
+A dry-run estimate supersedes the apparent size of a broad cache root when estimating likely recovery. Describe only categories demonstrated by the dry-run output; a few visible entries do not explain the entire total. Starting an app, daemon, VM, or runtime is a state change. When a stopped runtime is material, offer a bounded temporary start for read-only inventory and restoration to the recorded prior state; otherwise report the blocked native evidence instead of stopping at an opaque disk image.
 
 ## Development context
 
@@ -68,7 +70,7 @@ For each meaningful artifact, identify the project root and manifest or lockfile
 - Network and rebuild cost, including native modules and downloaded toolchains
 - Whether generated-looking output contains local-only work
 
-Never sum suspected duplicate groups as guaranteed physical savings. Report a range unless physical uniqueness is established. In the report, replace project roots and content-bearing child names with generic labels such as “active development project A” and stable finding IDs.
+Never sum suspected duplicate groups as guaranteed physical savings. Report a range unless physical uniqueness is established. Do not print exact project roots or content-bearing child names. In an interactive report, a project basename may be used when it is necessary to explain ownership or an action; otherwise use generic labels such as “active development project A” and stable finding IDs. Always use generic labels in shareable output.
 
 ## macOS volume interpretation
 
