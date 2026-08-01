@@ -8,34 +8,91 @@
                 |___/
   </pre>
   <br/>
-  <strong>Your Mac is hoarding. Let's find out why.</strong>
+  <strong>Your Mac is hoarding. TidyMac finds out why.</strong>
   <br/><br/>
-  A judgment-driven macOS disk-space auditor for Claude Code and Codex.
+  Disk cleanup for people who do not want to become filesystem archaeologists.
+  <br/><br/>
+  <a href="https://github.com/azohra/tidymac/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/azohra/tidymac?style=flat-square"></a>
+  <img alt="Runtime dependencies: none" src="https://img.shields.io/badge/runtime_dependencies-none-2ea44f?style=flat-square">
 </p>
 
 ---
 
-TidyMac investigates disk usage across macOS, explains what it means on this particular machine, and cleans only what you approve.
+TidyMac is a judgment-driven macOS disk-space investigator for **Claude Code** and **Codex**.
 
-It is a skill rather than a conventional cleaner app because the hard part is not finding large directories. The hard part is deciding whether an unfamiliar directory is disposable, expensive to regenerate, useful historical state, or the only remaining copy of something important.
+It does the weird forensic work—APFS accounting, package-manager previews, app ownership, runtime inventories—and gives you the normal-person answer first:
+
+| Decision | Meaning |
+|---|---|
+| **Clean up** | Verified disposable data. Here is what you get back and what may redownload. |
+| **Optional** | Real savings with a noticeable tradeoff, such as a rebuild or sign-in. |
+| **Keep** | Personal, active, unknown, or otherwise not worth gambling with. |
+
+Nothing changes until you approve the exact action.
+
+## The 30-second tour
+
+Ask:
+
+```text
+$tidymac Find out what is eating my disk and give me the easy wins first.
+```
+
+Get something shaped like this:
+
+```text
+Clean up · 14.8 GB
+  Package downloads       9.9 GB  Redownloaded only if needed
+  Old diagnostic logs     4.6 GB  Old troubleshooting history
+  Browser cache          0.3 GB  Regenerates silently
+
+Optional · 11.2 GB
+  Project build output    6.1 GB  Requires a rebuild
+  Local model             5.1 GB  Requires a redownload
+
+Keep
+  Photos library                  Personal originals
+  Active runtime volume           Stateful and currently in use
+```
+
+<sub>Synthetic example. Real findings come from the machine being audited.</sub>
+
+Pick a group or individual finding. TidyMac rechecks it, shows the exact command or native action, asks for approval, runs only what you selected, and measures what actually changed.
 
 ## Install
 
-Using the Skills installer is convenient:
+The easiest route is the Skills installer:
 
 ```bash
 npx skills add azohra/tidymac
 ```
 
-The installer clones the GitHub repository, discovers `skills/tidymac`, and copies that complete directory into the selected host. TidyMac is entirely self-contained Markdown, host UI metadata, and one standalone report shell: there are no helper programs, runtime libraries, or later code downloads.
-
-The installer can target Claude Code, Codex, or both. To select both explicitly:
+Install for both supported hosts explicitly:
 
 ```bash
 npx skills add azohra/tidymac -a claude-code -a codex
 ```
 
-Node.js is not a TidyMac runtime requirement; `npx` is only one way to copy the skill into place. Without it, download the repository or a release archive and copy the complete folder to the host's skill directory:
+Then invoke it using your host’s syntax:
+
+| Host | Invocation |
+|---|---|
+| Claude Code | `/tidymac` |
+| Codex | `$tidymac` |
+
+A bare invocation performs a read-only audit:
+
+```text
+/tidymac
+$tidymac
+```
+
+Node.js is only used here to copy the skill into place. TidyMac itself has no Node.js, Python, daemon, compiled helper, package install, or service dependency.
+
+<details>
+<summary><strong>Install manually without npx</strong></summary>
+
+Download this repository or a release archive, then copy the complete skill folder:
 
 ```bash
 mkdir -p "$HOME/.claude/skills" "$HOME/.agents/skills"
@@ -43,132 +100,129 @@ cp -R /path/to/tidymac/skills/tidymac "$HOME/.claude/skills/tidymac"
 cp -R /path/to/tidymac/skills/tidymac "$HOME/.agents/skills/tidymac"
 ```
 
-Use the first destination for Claude Code, the second for Codex, or both. That nine-file skill folder is the whole runtime product.
+Use the first destination for Claude Code, the second for Codex, or both. That nine-file folder is the whole runtime product.
 
-Invoke the installed skill with the syntax used by your host:
+</details>
 
-| Host | Invocation |
+## Why TidyMac exists
+
+Finding a large directory is easy. Knowing whether it is disposable is not.
+
+`8 GB cache` might mean a painless cleanup, a six-hour redownload, an active build accelerator, or a misleading label on something stateful. `Application Support` might be junk from an uninstalled app—or the only local copy of a workflow someone cares about.
+
+TidyMac investigates the owner, activity, contents, timestamps, native cleanup interface, regeneration path, and actual consequence before making the recommendation. It treats free space as urgency context, not as a reason to keep verified junk forever.
+
+In short: **size finds the suspect; evidence decides the action.**
+
+## Where it looks
+
+| Area | Examples |
 |---|---|
-| Claude Code | `/tidymac` |
-| Codex | `$tidymac` |
+| Apps and macOS | Caches, Application Support, containers, logs, saved state, Mail, Messages, Photos, browsers, Trash, device backups |
+| Development | Xcode data, package-manager caches, old runtimes, `node_modules`, `target`, `.build`, `.next`, virtual environments |
+| Containers and VMs | Docker Desktop, OrbStack, Podman, Colima, Parallels, VMware Fusion, UTM |
+| Local AI | Ollama, Hugging Face, LM Studio, model revisions and download caches |
+| Cloud storage | Local File Provider downloads that may be evicted without deleting the remote copy |
+| Creative and large media | Generated media, optional sound libraries, game libraries, relocatable assets |
+| Mystery space | Unclear app ownership, opaque runtime disks, inaccessible scope, APFS and OS-managed context |
 
-For example:
+The audit starts broad, then follows the evidence. It keeps lowering the scan floor until another pass no longer changes the explanation or recommendation—not until it has produced a scary list of every large thing you own.
+
+## Try asking it
 
 ```text
-$tidymac Audit my Mac and present a cleanup plan.
+Audit my Mac, but don't clean anything.
+I need 20 GB quickly; prioritize things that won't require a rebuild.
+Give me the easy wins and keep the explanation short.
+Focus on Xcode and old simulators.
+Show cloud files I can evict locally without deleting remotely.
+Find local AI models I no longer need, but don't remove anything.
+Find stale build artifacts outside this project.
+Investigate whether these large Application Support folders are leftovers.
+Show me an interactive opportunity map after the audit.
+Clean only the low-impact items I approve.
 ```
 
-A bare invocation runs a read-only audit. TidyMac presents a cleanup plan before making any changes.
+## Opportunity map
 
-## What it inspects
+On hosts with rich output, TidyMac can turn the completed audit into an interactive, machine-specific map.
 
-- macOS and XDG caches
-- Application Support, containers, logs, saved state, and HTTP storage
-- Xcode DerivedData, DeviceSupport, simulators, and archives
-- Docker Desktop, OrbStack, Podman, and Colima
-- Package-manager caches and developer toolchains
-- Old runtime versions
-- Local AI models and revisions from detected tools such as Ollama, Hugging Face, and LM Studio
-- Locally downloaded cloud files from detected File Provider services
-- Generated creative media and relocatable sound or media libraries
-- Game libraries and virtual-machine storage
-- Mail, Messages, Photos, browser, and Finder-managed backup storage through their native owners
-- Regenerable project artifacts such as `node_modules`, `target`, `.build`, `.next`, and virtual environments
-- Evidence of app data whose owner is no longer obvious
-- iOS device backups, Trash, installers, and other large contextual storage
+The first view shows **Clean up**, **Optional**, and **Keep** totals. Underneath, finding size represents observed local allocation—not a promise of recovered space—and each item explains its owner, evidence, confidence, scope, consequence, recovery route, and expected host-space effect.
 
-The audit starts with a fast user-space census, then lowers the scan floor and expands into contextual investigation. There is no fixed item-size definition of “important”: smaller findings are aggregated by owner and category, and another pass is required until the tail no longer changes the explanation or recommendations.
+Selecting items builds a proposed plan. It cannot execute commands, silently broaden scope, or count as approval. A standalone report uses the bundled self-contained HTML shell with no external assets, runtime packages, or command bridge.
 
-When a stopped container or VM runtime hides material storage behind an opaque disk image, TidyMac explains the gap and asks permission to start it temporarily for read-only native inventory. An approved inspection records the original state and restores it afterward, including when inventory fails.
+## Safety without the ceremony
 
-## How decisions work
+TidyMac is cautious about your data, not timid about disposable caches.
+
+- Auditing is read-only by default.
+- Every mutation is tied to an exact approved finding or command.
+- Unknown data stays out of cleanup groups.
+- Personal content is measured as context, not casually enumerated.
+- The current project and its ancestors are excluded from path cleanup.
+- Direct-path cleanup uses a revalidated, recoverable move to Trash—not improvised recursive deletion.
+- Trash is staged space, not reclaimed space, until it is reviewed and emptied.
+- Cloud eviction stays separate from cloud deletion.
+- Cache pruning, image removal, stateful-volume deletion, factory reset, and application uninstall remain different approval scopes.
+- Xcode archives, device backups, container volumes, and other stateful data receive individual treatment.
+
+That boundary is deliberate: understanding should be automatic; changing the machine should be explicit.
+
+<details>
+<summary><strong>How the investigation works</strong></summary>
+
+```text
+Native macOS census
+        ↓
+Contextual investigation
+        ↓
+Clean up / Optional / Keep
+        ↓
+Exact preview and approval
+        ↓
+Native action and measured result
+```
+
+Claude or Codex uses built-in macOS commands and relevant tools already installed on the machine. It gathers native inventories, dry-runs, manifests, application metadata, processes, receipts, timestamps, and project history until the important space is explained.
+
+TidyMac keeps a coverage ledger and a separate storage-reconciliation ledger. Inaccessible, provider-managed, other-user, OS-managed, and residual space stays visible instead of being mislabeled as junk or forced into a fake total.
+
+When a stopped container or VM runtime hides material storage behind an opaque disk image, TidyMac explains the gap and asks before temporarily starting it for read-only native inventory. An approved inspection records and restores the original state, including when inventory fails.
+
+</details>
+
+<details>
+<summary><strong>How it classifies risk</strong></summary>
 
 TidyMac keeps two questions separate:
 
 1. **How certain are we about what this is?** Verified, likely, or unknown.
 2. **What happens if it goes away?** Silent regeneration, redownload, rebuild, workflow reset, possible state loss, or non-regenerable loss.
 
-That distinction prevents a common cleanup mistake: treating “cache” as synonymous with “free.” A dependency cache may be safe to remove but expensive to download again; an unmatched app directory may be an orphan, shared state, or a deliberately retained archive.
+That distinction is why a verified cache can be recommended while still warning about a large future download—and why an “orphan-looking” folder is protected until its ownership is actually established.
 
-Findings are grouped by consequence so you can approve cheap cleanup without also agreeing to long rebuilds or loss of historical state.
+Useful data may be better **evicted locally**, **relocated**, or **pruned by its owning tool** rather than deleted. Synced deletion, workflow reset, Trash staging, and permanent deletion are never presented as interchangeable.
 
-The default report is decision-first: **Clean up**, **Optional**, and **Keep**. TidyMac does the forensic accounting underneath, but it does not require users to understand package-manager retention policy, APFS reconciliation, or a dossier table before seeing the recommendation. Healthy free space affects urgency, not whether verified disposable caches are worth removing.
-
-TidyMac also distinguishes the right kind of action. Useful data may be better **evicted locally**, **relocated**, or **pruned by its owning tool** rather than deleted. Cloud deletion, workflow reset, Trash staging, and permanent deletion remain separate scopes.
-
-## Generated opportunity map
-
-When the host supports rich output, TidyMac can turn a completed investigation into a machine-specific interactive opportunity map. Space is sized by observed local allocation and grouped by the correct action—evict, native prune, remove generated media, relocate, Trash, or delete.
-
-Selecting a finding explains why it exists, the evidence, confidence, scope, consequence, recovery route, and expected host-space effect. Users can assemble a proposed plan, but the visual never executes cleanup or replaces the exact approval prompt.
-
-The map is generated from the same finding records and reconciled arithmetic as the text report. It is optional: hosts without an artifact surface receive the complete structured report, and a requested standalone report uses the bundled self-contained HTML shell with no external assets or runtime dependencies.
-
-## Safety model
-
-- Auditing is the default. Nothing is silently cleaned.
-- Every mutation is tied to an approved finding or command.
-- Unknown findings are researched rather than guessed at.
-- Interactive reports reveal the minimum relevant owner identifiers needed to explain a finding or approve an action; shareable and public reports redact personal and project identifiers throughout.
-- Visual selections prepare a scoped plan but never count as cleanup approval.
-- Narrow manifests and configuration fields may be inspected when they establish ownership or regeneration. Personal content, credentials, secret-bearing logs, databases, and archives require explicit content-level permission.
-- “Unmatched” app data is never automatically called orphaned.
-- The current project and its ancestors are excluded from path cleanup.
-- Broad roots, symlinks, system directories, and changed-since-scan paths are rejected.
-- Direct path cleanup defaults to moving data to Trash.
-- Trash is never presented as reclaimed disk space until it is reviewed and emptied.
-- Container volumes, Xcode archives, iOS backups, and other stateful data receive individual treatment.
-- Container cache pruning, image removal, stateful-volume deletion, factory reset, and application uninstall are separate approval scopes.
-- Time Machine local snapshots are shown as context, not added to routine reclaimable totals; macOS normally manages their space automatically.
-
-## Architecture
-
-TidyMac is deliberately judgment-first:
-
-```text
-Native macOS census → contextual investigation → model conclusions → approval → exact native action
-```
-
-Claude or Codex uses built-in macOS commands and tools already installed on the machine to gather evidence. It keeps digging with native inventories, dry-runs, manifests, application metadata, processes, receipts, timestamps, project history, and current primary sources until the important space is explained. Raw directory sizes are intermediate evidence, not the report.
-
-The cleanup contract requires an exact plan and explicit approval. Direct-path actions are revalidated immediately before a recoverable move to Trash. Native cleanup commands are previewed when possible and approved individually.
-
-TidyMac maintains a coverage ledger and a separate storage-reconciliation ledger. Unexplained, inaccessible, provider-managed, other-user, and OS-managed space remains visible rather than being mislabeled as junk or forced into a false total.
-
-## Example requests
-
-```text
-/tidymac
-$tidymac
-Audit my Mac, but don't clean anything.
-Focus on Xcode and old simulators.
-Show me an interactive opportunity map after the audit.
-Find local AI models I no longer need, but don't remove anything.
-Show cloud files I can evict locally without deleting remotely.
-Find stale build artifacts outside this project.
-Investigate whether these large Application Support folders are leftovers.
-Clean only the low-impact items I approve.
-I need 20 GB quickly; prioritize things that won't require a rebuild.
-```
+</details>
 
 ## Requirements
 
 - macOS
 - Claude Code or Codex
 
-That is the full runtime requirement. TidyMac does not require Python, Node.js, npm packages, compiled helpers, a daemon, or a service. Optional ecosystem commands such as `brew`, `docker`, or `xcrun` are used only when they are already installed and relevant to the machine.
+That is the full runtime requirement. Optional ecosystem commands such as `brew`, `docker`, or `xcrun` are used only when already installed and relevant to the machine.
 
-A capable reasoning model is strongly recommended for a full audit. TidyMac contains explicit evidence, privacy, arithmetic, and safety preflight checks so a weaker model should fail closed with coverage gaps instead of inventing a complete-looking answer.
+A capable reasoning model is strongly recommended for a full-machine audit:
 
-Tested guidance:
-
-| Host | Full audit recommendation |
+| Host | Guidance |
 |---|---|
 | Claude Code | Sonnet or Opus class; Haiku is not supported for full-machine audits |
 | Codex | A frontier Codex model with medium or higher reasoning |
 
-The host chooses and provides the model; TidyMac does not call an API or bundle model credentials.
+The host supplies the model. TidyMac does not call an API, transmit the audit to its own service, or bundle model credentials.
 
-## Versioning
+## Releases
 
-TidyMac releases are Git tags and GitHub releases. The skill format does not need a runtime version field: the installer records the repository source and content hash. Use semantic versions for human-facing changes—patch for fixes, minor for backward-compatible workflow or capability changes, and major for a new contract or incompatible behavior.
+TidyMac uses semantic Git tags and [GitHub releases](https://github.com/azohra/tidymac/releases): patches for fixes, minors for backward-compatible workflow or capability changes, and majors for incompatible contracts.
+
+The skill itself does not need a runtime version field; installers record the repository source and content hash.
