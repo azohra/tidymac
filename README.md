@@ -74,6 +74,8 @@ A bare invocation runs a read-only audit. TidyMac presents a cleanup plan before
 
 The audit starts with a fast user-space census, then lowers the scan floor and expands into contextual investigation. There is no fixed item-size definition of “important”: smaller findings are aggregated by owner and category, and another pass is required until the tail no longer changes the explanation or recommendations.
 
+When a stopped container or VM runtime hides material storage behind an opaque disk image, TidyMac explains the gap and asks permission to start it temporarily for read-only native inventory. An approved inspection records the original state and restores it afterward, including when inventory fails.
+
 ## How decisions work
 
 TidyMac keeps two questions separate:
@@ -90,13 +92,15 @@ Findings are grouped by consequence so you can approve cheap cleanup without als
 - Auditing is the default. Nothing is silently cleaned.
 - Every mutation is tied to an approved finding or command.
 - Unknown findings are researched rather than guessed at.
-- Reports use generic labels for private project and content names unless an exact path is needed for an action the user is considering.
+- Interactive reports reveal the minimum relevant owner identifiers needed to explain a finding or approve an action; shareable and public reports redact personal and project identifiers throughout.
+- Narrow manifests and configuration fields may be inspected when they establish ownership or regeneration. Personal content, credentials, secret-bearing logs, databases, and archives require explicit content-level permission.
 - “Unmatched” app data is never automatically called orphaned.
 - The current project and its ancestors are excluded from path cleanup.
 - Broad roots, symlinks, system directories, and changed-since-scan paths are rejected.
 - Direct path cleanup defaults to moving data to Trash.
 - Trash is never presented as reclaimed disk space until it is reviewed and emptied.
 - Container volumes, Xcode archives, iOS backups, and other stateful data receive individual treatment.
+- Container cache pruning, image removal, stateful-volume deletion, factory reset, and application uninstall are separate approval scopes.
 - Time Machine local snapshots are shown as context, not added to routine reclaimable totals; macOS normally manages their space automatically.
 
 ## Architecture

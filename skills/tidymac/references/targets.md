@@ -51,10 +51,14 @@ For each meaningful candidate, check project manifests, lockfiles, Git activity,
 
 - Detect Docker Desktop, OrbStack, Podman, and Colima independently.
 - If a runtime is already running, prefer its inventory over its opaque disk image.
-- Ask before starting a stopped runtime. After status says stopped, do not run client/list/inventory commands that may auto-start it.
+- If a stopped runtime materially contributes space, measure its host-allocated backing storage and offer to start it temporarily for read-only native inventory, then restore it to stopped. Record the initial state and restore it even after a failed inventory command.
+- Before approval, do not run client, context, list, or inventory commands that might auto-start or connect to the stopped runtime. Do not present the opaque backing image as the final finding when native interrogation is available with approval.
 - Do not count a sparse VM disk's apparent maximum as reclaimable.
 - Do not propose removing runtime data directories except as an explicitly requested factory reset or removal of an abandoned runtime.
-- Never include volumes in a general prune. Investigate each volume's name, labels, attachment, and likely contents.
+- Inventory containers, images, build cache, networks, and volumes separately. Treat a Docker volume reported as active as referenced, not proof that its owning container is running.
+- Describe a referenced volume as an attached stateful volume, identify the container or stack that references it when useful to the user, and keep it out of cache totals.
+- Never include volumes in a general prune. Investigate each volume's name, labels, attachment, and likely contents. Delete one only after exact state-loss approval, or as part of a separately approved native factory reset that explicitly destroys all runtime data.
+- Keep native internal reclaimability, host-allocated backing-store size, and observed host recovery as separate numbers.
 
 ## APFS and Time Machine
 
