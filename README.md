@@ -1,97 +1,110 @@
 <p align="center">
   <pre align="center">
-  _____ _     _       __  __            
- |_   _(_) __| |_   _|  \/  | __ _  ___ 
+  _____ _     _       __  __
+ |_   _(_) __| |_   _|  \/  | __ _  ___
    | | | |/ _` | | | | |\/| |/ _` |/ __|
-   | | | | (_| | |_| | |  | | (_| | (__ 
+   | | | | (_| | |_| | |  | | (_| | (__
    |_| |_|\__,_|\__, |_|  |_|\__,_|\___|
-                |___/                    
+                |___/
   </pre>
   <br/>
-  <strong>Your Mac is hoarding. Let's fix that.</strong>
+  <strong>Your Mac is hoarding. Let's find out why.</strong>
   <br/><br/>
-  A Claude Code skill that hunts down reclaimable disk space<br/>
-  with the tenacity of a Marie Kondo / forensic accountant hybrid.
+  A judgment-driven macOS disk-space auditor for Claude Code and Codex.
 </p>
 
 ---
 
-## The Problem
+TidyMac finds meaningful disk-space opportunities across macOS, explains the consequence of each one, and cleans only what you approve.
 
-Every macOS machine is quietly accumulating garbage:
+It is a skill rather than a conventional cleaner app because the hard part is not finding large directories. The hard part is deciding whether an unfamiliar directory is disposable, expensive to regenerate, useful historical state, or the only remaining copy of something important.
 
-- **Uninstalled apps leave their data behind.** Drag an app to Trash? Congrats, you deleted the 50MB binary. The 17GB of `~/Library/Application Support` data? Still there. Forever.
-- **Package managers cache everything.** npm, brew, pip, cargo, pnpm, conda, composer — they all download, build, and cache aggressively. Nobody runs the cleanup commands.
-- **Xcode is a black hole.** DerivedData, DeviceSupport, dead simulators, old runtimes — easily 50-100GB on an active iOS dev machine.
-- **Electron apps are disk vampires.** Every Slack, Discord, Teams, Spotify, and Notion window is a full Chromium instance with its own Service Workers, IndexedDB, GPU shader cache, and crash dumps.
-- **Container runtimes hoard images.** Docker, OrbStack, Podman — dangling images, stopped containers, and build cache pile up silently.
-- **Build artifacts multiply.** That `node_modules` in a project you touched once six months ago? Still 1.2GB. The Rust `target/` dir? 6GB and growing.
-- **Time Machine snapshots consume the boot drive.** Local snapshots can quietly eat 10-80GB without showing up in Finder.
-
-macOS has no built-in mechanism to find or clean any of this.
-
-## The Fix
+## Install
 
 ```bash
 npx skills add azohra/tidymac
 ```
 
-Then in Claude Code:
+The installer can target Claude Code, Codex, or both. Invoke the installed skill with the syntax used by your host:
 
+| Host | Invocation |
+|---|---|
+| Claude Code | `/tidymac` |
+| Codex | `$tidymac` |
+
+For example:
+
+```text
+$tidymac Audit my Mac and present a cleanup plan.
 ```
+
+A bare invocation runs a read-only audit. TidyMac presents a cleanup plan before making any changes.
+
+## What it inspects
+
+- macOS and XDG caches
+- Application Support, containers, logs, saved state, and HTTP storage
+- Xcode DerivedData, DeviceSupport, simulators, and archives
+- Docker Desktop, OrbStack, Podman, and Colima
+- Package-manager caches and developer toolchains
+- Old runtime versions
+- Regenerable project artifacts such as `node_modules`, `target`, `.build`, `.next`, and virtual environments
+- Evidence of app data whose owner is no longer obvious
+- iOS device backups, Trash, installers, and other large contextual storage
+
+The default pass starts with large user-space findings. It expands into slower or more specialized scans only when the results justify doing so.
+
+## How decisions work
+
+TidyMac keeps two questions separate:
+
+1. **How certain are we about what this is?** Verified, likely, or unknown.
+2. **What happens if it goes away?** Silent regeneration, redownload, rebuild, workflow reset, possible state loss, or non-regenerable loss.
+
+That distinction prevents a common cleanup mistake: treating “cache” as synonymous with “free.” A dependency cache may be safe to remove but expensive to download again; an unmatched app directory may be an orphan, shared state, or a deliberately retained archive.
+
+Findings are grouped by consequence so you can approve cheap cleanup without also agreeing to long rebuilds or loss of historical state.
+
+## Safety model
+
+- Auditing is the default. Nothing is silently cleaned.
+- Every mutation is tied to an approved finding or command.
+- Unknown findings are researched rather than guessed at.
+- “Unmatched” app data is never automatically called orphaned.
+- The current project and its ancestors are excluded from path cleanup.
+- Broad roots, symlinks, system directories, and changed-since-scan paths are rejected.
+- Direct path cleanup defaults to moving data to Trash.
+- Trash is never presented as reclaimed disk space until it is reviewed and emptied.
+- Container volumes, Xcode archives, iOS backups, and other stateful data receive individual treatment.
+- Time Machine local snapshots are shown as context, not added to routine reclaimable totals; macOS normally manages their space automatically.
+
+## Architecture
+
+TidyMac deliberately splits deterministic work from subjective work:
+
+```text
+Read-only scanners → structured evidence → model judgment → approval → guarded execution
+```
+
+The bundled Python scanners handle pathname-safe inventory, allocated-size estimates, project-marker verification, installed-app evidence, and structured JSON output. The skill handles research, confidence, consequences, prioritization, and conversation with the user.
+
+The guarded path executor creates a plan before acting. It records path identity and size, emits an approval token, and revalidates everything immediately before moving or deleting data. If a target changed in the meantime, it stops.
+
+## Example requests
+
+```text
 /tidymac
+$tidymac
+Audit my Mac, but don't clean anything.
+Focus on Xcode and old simulators.
+Find stale build artifacts outside this project.
+Investigate whether these large Application Support folders are leftovers.
+Clean only the low-impact items I approve.
+I need 20 GB quickly; prioritize things that won't require a rebuild.
 ```
-
-That's it. TidyMac scans your machine, figures out what's reclaimable, and handles cleanup interactively — safe stuff gets cleaned automatically, sketchy stuff gets researched and presented for your approval.
-
-## How It Works
-
-TidyMac is **discovery-based, not list-based.** It doesn't maintain a hardcoded database of "known junk paths." Instead, it teaches Claude *how to find* reclaimable space on any Mac:
-
-**1. Measure everything.** Scan `~/Library/*`, system caches, and rank by size. The biggest directories get attention first.
-
-**2. Detect your tools.** Find every package manager, toolchain, version manager, and container runtime you have installed. Run their native cleanup commands. If it has a `cache clean`, TidyMac will find it.
-
-**3. Scan developer tools.** Xcode DerivedData, DeviceSupport, dead simulators, old runtimes — the stuff that quietly grows to 50-100GB.
-
-**4. Hunt orphans.** Systematically cross-reference every app data directory against what's actually installed. No match? It's dead weight from something you uninstalled.
-
-**5. Find dev artifacts.** Locate `node_modules`, `.venv`, `target/`, `build/`, `.next/`, `Pods/`, and other regenerable directories across your projects (excluding the one you're currently working in).
-
-**6. Check everything else.** Time Machine local snapshots, iOS backups, old macOS installers, GarageBand sound libraries, Trash — the stuff you forgot about.
-
-## Safety Tiers
-
-Not everything gets the same treatment:
-
-| Tier | What happens | Examples |
-|---|---|---|
-| **Auto-clean** | Cleaned silently | Package manager caches, crash dumps, old logs |
-| **Batch-confirm** | Presented as a group, single yes/no | Build artifacts, large app caches |
-| **Research first** | Inspected + web-searched before recommending | Unknown large directories |
-| **Individual-confirm** | Presented one at a time with context | Orphaned app data, SIP-protected containers |
-
-If TidyMac doesn't know what something is, it looks it up. If it still can't tell, it asks you. It never guesses.
-
-## What It Typically Finds
-
-TidyMac routinely recovers **30-100+GB** depending on the machine. The biggest offenders, ranked by typical savings:
-
-| Category | Typical Size | Example |
-|---|---|---|
-| Xcode DerivedData + DeviceSupport | 10-100GB | Build artifacts for every device you've ever connected |
-| Container images & build cache | 5-60GB | Docker Desktop data after switching to OrbStack |
-| Time Machine local snapshots | 10-80GB | Redundant on-disk copies of your TM backup |
-| Dev artifacts across projects | 5-50GB | `node_modules`, `target/`, `.venv` in inactive repos |
-| Orphaned app data | 5-50GB | ~/Library leftovers from uninstalled apps |
-| Package manager caches | 5-50GB | npm, Homebrew, Cargo, pip, and friends |
-| Electron app caches | 2-15GB | Slack, Discord, Teams, Spotify internals |
-| Old toolchain versions | 2-20GB | Unused Node, Python, Ruby versions from nvm/pyenv/rbenv |
-| Logs & crash reports | 1-5GB | Years of accumulated diagnostic data |
-
-Most of it is from things the user has already stopped using.
 
 ## Requirements
 
 - macOS
-- [Claude Code](https://claude.ai/code)
+- Claude Code or Codex
+- Python 3 from macOS developer tools or another local installation; bundled scripts use only the standard library
