@@ -132,13 +132,34 @@ The audit starts broad, then follows the evidence. It keeps lowering the scan fl
 
 TidyMac’s job is to discover the suspects. You can describe the outcome you want—or simply invoke it with no instructions at all.
 
+**No context needed:**
+
 ```text
 $tidymac
+```
+
+**When you have no idea where the space went:**
+
+```text
 Why is my Mac full?
+```
+
+**When you want the shortest useful answer:**
+
+```text
 Make this easy: tell me what to clean, what is optional, and what to keep.
+```
+
+**When you need a specific amount of space:**
+
+```text
 I need 20 GB. Find the least painful way to get it.
+```
+
+**When you want a general tidy-up:**
+
+```text
 Free as much space as you reasonably can without disrupting my work.
-My Mac feels cluttered. Investigate it and recommend what to do.
 ```
 
 You should not have to know what a simulator, package cache, File Provider, model revision, runtime volume, or mystery `Application Support` folder is. If one matters on this Mac, TidyMac finds it, explains it, and puts it in the right decision group.
