@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-<title>TidyMac opportunity report</title>
+<title>TidyMac storage report</title>
 <style>
   :root {
     --tm-bg: light-dark(#f5f5f1, #171816);
@@ -273,10 +273,8 @@
 <!-- Replace only this JSON object with finalized, HTML-safe JSON. Escape <, >, and & as Unicode sequences. -->
 <script id="tidymac-report-data" type="application/json">
 {
-  "report_title": "",
   "state": "Report template",
   "privacy_note": "",
-  "reviewable_bytes": 0,
   "decision_totals": {
     "clean_up_bytes": 0,
     "optional_bytes": 0,
@@ -315,7 +313,7 @@
   };
 
   const validFindings = Array.isArray(report.findings)
-    ? report.findings.filter((item) => item && typeof item.id === 'string' && Number.isFinite(Number(item.allocated_bytes)))
+    ? report.findings.filter((item) => item && typeof item.id === 'string' && Number.isFinite(Number(item.allocated_bytes)) && Number(item.allocated_bytes) >= 0)
     : [];
   const selected = new Set();
   let activeId = validFindings[0]?.id || null;
@@ -393,7 +391,9 @@
     ];
     accountTrack.replaceChildren();
     if (!used) return;
-    accountMain.innerHTML = `<strong>${bytes(r.explained_bytes)} explained</strong> of ${bytes(used)} used`;
+    const explained = document.createElement('strong');
+    explained.textContent = `${bytes(r.explained_bytes)} explained`;
+    accountMain.replaceChildren(explained, document.createTextNode(` of ${bytes(used)} used`));
     accountGap.textContent = `${bytes(r.residual_bytes)} residual gap`;
     parts.forEach(([className, value, label]) => {
       if (value <= 0) return;
@@ -462,7 +462,7 @@
       copyResult.textContent = '';
       return;
     }
-    planValue.textContent = `${bytes(total)} selected across ${ids.length} ${ids.length === 1 ? 'finding' : 'findings'}`;
+    planValue.textContent = `${bytes(total)} allocated across ${ids.length} selected ${ids.length === 1 ? 'finding' : 'findings'}`;
     planSub.textContent = `IDs: ${ids.join(', ')} · Exact actions still require revalidation and approval.`;
     copy.disabled = false;
   }
@@ -486,7 +486,7 @@
 
   if (validFindings.length) {
     state.textContent = text(report.state, 'Scan complete');
-    const cleanUp = Number(report.decision_totals?.clean_up_bytes) || 0;
+    const cleanUp = Math.max(0, Number(report.decision_totals?.clean_up_bytes) || 0);
     headline.replaceChildren(document.createTextNode(cleanUp ? `${bytes(cleanUp)} ` : 'No cleanup '));
     const tail = document.createElement('span');
     tail.textContent = cleanUp ? 'ready to clean up' : 'recommended';
