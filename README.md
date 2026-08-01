@@ -35,7 +35,7 @@ Nothing changes until you approve the exact action.
 Ask:
 
 ```text
-$tidymac Find out what is eating my disk and give me the easy wins first.
+$tidymac
 ```
 
 Get something shaped like this:
@@ -128,20 +128,20 @@ In short: **size finds the suspect; evidence decides the action.**
 
 The audit starts broad, then follows the evidence. It keeps lowering the scan floor until another pass no longer changes the explanation or recommendation—not until it has produced a scary list of every large thing you own.
 
-## Try asking it
+## You do not need to know what to ask for
+
+TidyMac’s job is to discover the suspects. You can describe the outcome you want—or simply invoke it with no instructions at all.
 
 ```text
-Audit my Mac, but don't clean anything.
-I need 20 GB quickly; prioritize things that won't require a rebuild.
-Give me the easy wins and keep the explanation short.
-Focus on Xcode and old simulators.
-Show cloud files I can evict locally without deleting remotely.
-Find local AI models I no longer need, but don't remove anything.
-Find stale build artifacts outside this project.
-Investigate whether these large Application Support folders are leftovers.
-Show me an interactive opportunity map after the audit.
-Clean only the low-impact items I approve.
+$tidymac
+Why is my Mac full?
+Make this easy: tell me what to clean, what is optional, and what to keep.
+I need 20 GB. Find the least painful way to get it.
+Free as much space as you reasonably can without disrupting my work.
+My Mac feels cluttered. Investigate it and recommend what to do.
 ```
+
+You should not have to know what a simulator, package cache, File Provider, model revision, runtime volume, or mystery `Application Support` folder is. If one matters on this Mac, TidyMac finds it, explains it, and puts it in the right decision group.
 
 ## Opportunity map
 
