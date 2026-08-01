@@ -55,7 +55,7 @@ The absence of a process does not prove abandonment. Directory modification time
 
 When an ecosystem materially contributes space, use the installed tool's current help and read-only surface. Typical examples:
 
-- Homebrew: installed formulae/casks and `brew cleanup --dry-run`
+- Homebrew: installed formulae/casks, `brew cleanup --dry-run`, an age-bounded dry-run when useful, and `brew cleanup --dry-run --prune=all` so the report distinguishes ordinary cleanup from the full redownloadable download cache
 - Docker: `docker system df -v`, container/image lists, and volume inventory if the daemon is already running
 - OrbStack, Podman, and Colima: runtime status and supported native inventory
 - Xcode: `xcrun simctl` device/runtime inventories

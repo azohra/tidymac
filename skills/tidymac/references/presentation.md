@@ -27,6 +27,7 @@ Give every displayed opportunity one canonical record:
 | `expected_host_recovery` | Range or unknown; never copied blindly from another size |
 | `confidence` | Verified, likely, or unknown |
 | `data_class` | Cache, generated media, model, backup, workflow state, content, runtime, or unknown |
+| `decision` | Clean up, optional, or keep |
 | `action` | Keep, evict, relocate, native prune, remove regenerable derivative, redownload, reset, Trash, synced delete, or permanent delete |
 | `scope` | This Mac, external volume, owning runtime, cloud, or synchronized devices |
 | `consequence` | Regeneration, redownload, rebuild, reset, possible state loss, or non-regenerable loss |
@@ -37,11 +38,13 @@ Give every displayed opportunity one canonical record:
 
 Omit unavailable optional values rather than guessing. Store all arithmetic in bytes and format values only for display.
 
+At report level, provide deduplicated `decision_totals` for `clean_up_bytes`, `optional_bytes`, and `keep_bytes`. Do not derive these totals by blindly summing overlapping findings or inclusive alternatives.
+
 ## Opportunity map
 
 Default to one compact generated view rather than a generic dashboard:
 
-- Lead with the deduplicated reviewable opportunity and contextualized coverage.
+- Lead with the **Clean up**, **Optional**, and **Keep** decision groups plus their deduplicated totals. Put contextualized coverage and reconciliation immediately below rather than making them the primary decision surface.
 - Show a storage-accounting bar with explained measured storage, inaccessible scope, documented OS-managed context, and residual unexplained storage. Do not imply that unrelated measurement bases add exactly.
 - Size finding marks by observed local allocation, clearly labeled as allocated size rather than promised savings.
 - Encode the proposed action—not the application category or consequence—with stable labels such as evict, native prune, remove generated copy, relocate, Trash, and delete.
