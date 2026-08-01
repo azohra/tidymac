@@ -31,6 +31,21 @@ List installed versions, active selections, and project references before propos
 5. Never add volumes to a general prune.
 6. Compact a VM only after internal pruning and only with the installed runtime's documented command.
 
+Keep these actions separate:
+
+| Action | Consequence |
+|---|---|
+| Build-cache prune | Rebuild time; may remove recently referenced but currently unused cache. |
+| Unused-image prune | Redownload or rebuild; may remove every image not referenced by a container. |
+| Stopped-container removal | Workflow state and writable layer are lost. |
+| Individual named-volume removal | Persistent application data may be permanently lost. |
+| Runtime factory reset | All machines, containers, images, cache, networks, volumes, and runtime state are permanently lost. |
+| Runtime uninstall | Application removal; data removal semantics must be established separately. |
+
+For OrbStack, read `orbctl reset --help` from the installed version. If it confirms that reset deletes all Linux and Docker data while preserving the application and configuration, propose `orbctl reset --yes` only when the user explicitly requests that exact scope. Do not manually delete the backing disk. Measure Data-volume free space immediately before and after the reset; report the observed change separately from Docker's earlier internal estimate.
+
+Put the exact command in the same prompt that asks for approval. Do not ask the user to approve a verbal scope and then reveal the irreversible command in a second round unless revalidation changed the action.
+
 ## Direct paths
 
 Direct-path cleanup defaults to a recoverable move to Trash and requires individual investigation.
@@ -50,3 +65,5 @@ After approval, repeat the same `stat` and `du` measurements. Stop if device, in
 Verify the source no longer exists and the destination does. Report the amount as staged in Trash, not reclaimed.
 
 Permanent deletion is a separate workflow requiring a fresh explicit request and irreversible-loss acknowledgment. Ordinary cleanup approval is not permanent-deletion approval.
+
+For Finder-managed Trash emptying, establish that an interactive user session is available before invoking Finder automation. If the Mac is locked or the UI cannot receive the confirmation, leave Trash unchanged and report the block; do not replace the native operation with raw recursive deletion. Immediately before the irreversible action, confirm the reviewed Trash scope and observed size again.
