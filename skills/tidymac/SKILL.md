@@ -1,6 +1,6 @@
 ---
 name: tidymac
-description: Deeply investigate, explain, visualize, and optionally reclaim disk space on macOS using built-in macOS commands and already-installed native tools; use when a user asks what is consuming Mac storage, wants a safe cleanup plan or generated opportunity map, or explicitly asks to clean selected findings. This skill is fully self-contained, defaults to read-only investigation, and requires approval before every mutation.
+description: Deeply investigate, plainly explain, visualize, and optionally reclaim disk space on macOS using built-in macOS commands and already-installed native tools; use when a user asks what is consuming Mac storage, wants a decisive cleanup recommendation or generated opportunity map, or explicitly asks to clean selected findings. This skill is fully self-contained, defaults to read-only investigation, and requires approval before every mutation.
 ---
 
 # TidyMac
@@ -56,6 +56,24 @@ Choose the narrowest mode consistent with the request:
 - **Urgent recovery:** Prioritize the strongest low-consequence opportunities, then widen coverage until the recovery goal is met or the remaining space is explained.
 
 Do not ask a setup question when read-only work can answer it. Ask only before a required state change or when user knowledge is the missing evidence.
+
+## Make the decision easy
+
+Do the forensic work internally. Do not make a normal user interpret cache policy, APFS accounting, dry-run semantics, or a long evidence table before learning what to do.
+
+Lead with at most three decision groups:
+
+1. **Clean up:** Verified, material, owner-managed or exact-path data with a concrete action and a bounded consequence such as redownload, silent regeneration, or loss of old diagnostics.
+2. **Optional:** Valid recovery with a noticeable tradeoff such as a rebuild, sign-out, workflow reset, or loss of useful local history.
+3. **Keep:** Non-regenerable, active state, unknown ownership, protected personal content, or data whose supported recovery route is not established.
+
+For each group, state the total, one plain-language consequence, and the included finding IDs. Put detailed evidence, confidence, paths, commands, and arithmetic after the decision summary or reveal them when the user prepares cleanup.
+
+- Treat available free space as urgency context, not as a reason to preserve verified disposable data. A user asking to tidy a Mac may reasonably choose to remove caches even when the disk is not full.
+- Recommend material, fully redownloadable package-manager downloads, browser/app caches with a supported clear action, old diagnostic logs, and other verified disposable derivatives by default. Do not call a cached installer or current-version download “active”; the installed application, formula, runtime, or project is the active state.
+- Prefer the owner-native cleanup that reclaims the most verified disposable data. Offer an age-bounded alternative when it materially reduces redownload cost, but do not automatically prefer it over a full cache prune.
+- Keep redownload, rebuild, sign-out, workflow reset, and possible state loss visibly distinct. Do not hide a real consequence behind “safe,” but do not turn a small and reversible tradeoff into a reason to withhold a recommendation.
+- Preserve exact approval before mutation. Simplicity changes presentation and recommendation strength, not authorization boundaries.
 
 ## Investigate the machine
 
@@ -188,7 +206,7 @@ Unknown data remains protected, but “inspect later” is not a finished conclu
 
 ## Classify and report
 
-Read [references/classification.md](references/classification.md). Lead with conclusions, not command logs or raw candidates.
+Read [references/classification.md](references/classification.md). Lead with the three decision groups from **Make the decision easy**, not command logs, coverage machinery, or raw candidates. Follow with the evidence and reconciliation needed to support those decisions.
 
 Report:
 
@@ -207,7 +225,7 @@ Show the finding IDs included in every total and make the arithmetic reconcile. 
 
 `Potential` is the deduplicated upper bound of evidence-backed reclaimable findings with a concrete action and known consequence. Every included ID must name its supported native cleanup command or exact guarded Trash workflow and any stopped-owner precondition. “Conditional,” “user decision,” “removable,” or “regenerable-looking” without that action is not enough; keep the ID out of potential until the action is established. Do not count non-regenerable user or workflow history, context-only data, opaque runtime disks, or an entire store when only an unknown fraction might be prunable. A blocked native prune without a dry-run contributes `0–measured size` only if there is evidence some portion is actually unreferenced; otherwise keep it out of totals.
 
-Group proposals by consequence: silent regeneration, redownload, rebuild, workflow reset, state loss possible, and non-regenerable. Let the user approve individual IDs or clearly named groups. Keep unknown findings out of cleanup groups.
+Group proposals by consequence: silent regeneration, redownload, rebuild, workflow reset, state loss possible, and non-regenerable. Let the user approve individual IDs or one clearly named same-consequence group. Keep unknown findings out of cleanup groups. Do not force the user through serial explanations or confirmations when one concise approval card can show the exact commands for the selected group.
 
 ### Generate the opportunity report
 
@@ -225,7 +243,7 @@ Before emitting the report, stop and correct it unless every check passes:
 4. **Arithmetic check:** Coverage shows exact contextualized bytes divided by exact measured in-scope bytes. Potential, recommended, approved, staged, and reclaimed totals list their included IDs, use normalized units, are non-overlapping, and add exactly; alternatives show deltas. Every potential ID names a concrete supported action and preconditions; unknown, merely conditional, or non-regenerable data is excluded.
 5. **Safety check:** A read-only audit made no unapproved changes. Any approved temporary runtime start was read-only and restored to its recorded state. The report contains no direct-path `rm`, recursive deletion, broad-root cleanup, or unapproved execution language. Native cleanup commands are clearly proposed, not performed.
 6. **Restraint check:** Unknown, opaque, running, stateful, non-regenerable, and possible-duplicate data is not called safe or counted as recommended savings.
-7. **Presentation check:** Visual and text views use the same finding IDs, sizes, scopes, totals, and uncertainties. Bubble or area size is not shown as guaranteed recovery; interactions cannot execute cleanup or silently broaden scope.
+7. **Presentation check:** The first view gives a normal user a short clean-up/optional/keep decision, while evidence and accounting remain available underneath. Visual and text views use the same finding IDs, sizes, scopes, totals, and uncertainties. Bubble or area size is not shown as guaranteed recovery; interactions cannot execute cleanup or silently broaden scope.
 
 If the evidence or available reasoning is insufficient, produce a shorter accurate report with explicit gaps. Never fill a contract field with a guess merely to make the report look complete. Apply this check silently: do not print “preflight passed” or claim compliance; the report itself must demonstrate it.
 

@@ -25,6 +25,8 @@
     --tm-delete: light-dark(#fee2e2, #592424);
     --tm-keep: light-dark(#e7e7e2, #33342f);
     --tm-unknown: light-dark(#f3f4f6, #282a2c);
+    --tm-clean: light-dark(#dcfce7, #18462f);
+    --tm-optional: light-dark(#fef3c7, #574012);
   }
 
   * { box-sizing: border-box; }
@@ -99,6 +101,14 @@
 
   .tm-headline span { color: var(--tm-muted); }
   .tm-privacy { max-width: 270px; color: var(--tm-muted); text-align: right; font-size: .82rem; line-height: 1.4; overflow-wrap: anywhere; }
+  .tm-decisions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .tm-decision { min-width: 0; padding: 14px; border: 1px solid var(--tm-line); border-radius: 14px; }
+  .tm-decision-clean { background: var(--tm-clean); }
+  .tm-decision-optional { background: var(--tm-optional); }
+  .tm-decision-keep { background: var(--tm-keep); }
+  .tm-decision-label { font-size: .78rem; font-weight: 600; }
+  .tm-decision-value { margin-top: 5px; font-size: clamp(1.3rem, 3vw, 2rem); font-weight: 600; letter-spacing: -.035em; }
+  .tm-decision-note { margin-top: 3px; color: var(--tm-muted); font-size: .74rem; }
   .tm-account { margin-bottom: 21px; }
   .tm-account-labels { justify-content: space-between; gap: 12px; margin-bottom: 7px; color: var(--tm-muted); font-size: .79rem; }
   .tm-account-labels strong { color: var(--tm-ink); font-weight: 600; }
@@ -189,6 +199,7 @@
     .tm-content { padding: 16px; }
     .tm-summary { flex-direction: column; align-items: flex-start; }
     .tm-privacy { max-width: none; text-align: left; }
+    .tm-decisions { grid-template-columns: 1fr; }
     .tm-account-labels { align-items: flex-start; flex-direction: column; }
     .tm-main { grid-template-columns: 1fr; }
     .tm-map { min-height: 350px; }
@@ -215,6 +226,12 @@
         <div class="tm-headline" id="tm-headline">Waiting for <span>scan findings</span></div>
       </div>
       <div class="tm-privacy" id="tm-privacy">This bundled shell contains no machine data. A completed audit embeds only the identifiers needed for its selected privacy mode.</div>
+    </section>
+
+    <section class="tm-decisions" aria-label="TidyMac recommendation">
+      <div class="tm-decision tm-decision-clean"><div class="tm-decision-label">Clean up</div><div class="tm-decision-value" id="tm-clean-value">0 B</div><div class="tm-decision-note" id="tm-clean-note">Verified disposable data</div></div>
+      <div class="tm-decision tm-decision-optional"><div class="tm-decision-label">Optional</div><div class="tm-decision-value" id="tm-optional-value">0 B</div><div class="tm-decision-note" id="tm-optional-note">Useful space with a tradeoff</div></div>
+      <div class="tm-decision tm-decision-keep"><div class="tm-decision-label">Keep</div><div class="tm-decision-value" id="tm-keep-value">0 B</div><div class="tm-decision-note" id="tm-keep-note">Active, personal, or unresolved</div></div>
     </section>
 
     <section class="tm-account" aria-label="Storage reconciliation">
@@ -260,6 +277,11 @@
   "state": "Report template",
   "privacy_note": "",
   "reviewable_bytes": 0,
+  "decision_totals": {
+    "clean_up_bytes": 0,
+    "optional_bytes": 0,
+    "keep_bytes": 0
+  },
   "reconciliation": {
     "used_bytes": 0,
     "explained_bytes": 0,
@@ -302,6 +324,12 @@
   const state = byId('tm-state');
   const headline = byId('tm-headline');
   const privacy = byId('tm-privacy');
+  const cleanValue = byId('tm-clean-value');
+  const cleanNote = byId('tm-clean-note');
+  const optionalValue = byId('tm-optional-value');
+  const optionalNote = byId('tm-optional-note');
+  const keepValue = byId('tm-keep-value');
+  const keepNote = byId('tm-keep-note');
   const accountMain = byId('tm-account-main');
   const accountGap = byId('tm-account-gap');
   const accountTrack = byId('tm-account-track');
@@ -331,6 +359,28 @@
 
   function actionInfo(action) { return actionStyles[action] || actionStyles.unknown; }
   function text(value, fallback) { return typeof value === 'string' && value.trim() ? value.trim() : fallback; }
+
+  function decisionKey(item) {
+    const value = typeof item.decision === 'string' ? item.decision.trim().toLowerCase().replace(/[ _]+/g, '-') : '';
+    if (value === 'clean-up' || value === 'cleanup') return 'clean-up';
+    if (value === 'optional') return 'optional';
+    return 'keep';
+  }
+
+  function renderDecisions() {
+    const totals = report.decision_totals || {};
+    const groups = {
+      'clean-up': validFindings.filter((item) => decisionKey(item) === 'clean-up'),
+      'optional': validFindings.filter((item) => decisionKey(item) === 'optional'),
+      'keep': validFindings.filter((item) => decisionKey(item) === 'keep')
+    };
+    cleanValue.textContent = bytes(totals.clean_up_bytes);
+    optionalValue.textContent = bytes(totals.optional_bytes);
+    keepValue.textContent = bytes(totals.keep_bytes);
+    cleanNote.textContent = `${groups['clean-up'].length} verified ${groups['clean-up'].length === 1 ? 'item' : 'items'} ready to propose`;
+    optionalNote.textContent = `${groups.optional.length} ${groups.optional.length === 1 ? 'choice' : 'choices'} with a tradeoff`;
+    keepNote.textContent = `${groups.keep.length} ${groups.keep.length === 1 ? 'item stays' : 'items stay'}`;
+  }
 
   function renderReconciliation() {
     const r = report.reconciliation || {};
@@ -436,12 +486,13 @@
 
   if (validFindings.length) {
     state.textContent = text(report.state, 'Scan complete');
-    const reviewable = Number(report.reviewable_bytes) || validFindings.reduce((sum, item) => sum + Number(item.allocated_bytes || 0), 0);
-    headline.replaceChildren(document.createTextNode(`${bytes(reviewable)} `));
+    const cleanUp = Number(report.decision_totals?.clean_up_bytes) || 0;
+    headline.replaceChildren(document.createTextNode(cleanUp ? `${bytes(cleanUp)} ` : 'No cleanup '));
     const tail = document.createElement('span');
-    tail.textContent = text(report.report_title, 'worth understanding');
+    tail.textContent = cleanUp ? 'ready to clean up' : 'recommended';
     headline.append(tail);
     privacy.textContent = text(report.privacy_note, 'Only the identifiers needed to explain and approve findings are shown.');
+    renderDecisions();
     renderReconciliation();
     renderBubbles();
     renderDetail();

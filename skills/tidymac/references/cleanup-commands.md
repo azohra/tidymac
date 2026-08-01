@@ -6,7 +6,7 @@ Use only built-in macOS commands and tools already installed on the machine. Rea
 
 | Tool | Inspect or preview | Candidate action | Consequence |
 |---|---|---|---|
-| Homebrew | `brew cleanup --dry-run`; `brew autoremove --dry-run` | Offer cleanup and autoremove separately | Cleanup removes downloads/old versions; autoremove uninstalls formulae. |
+| Homebrew | `brew cleanup --dry-run`; optionally set `HOMEBREW_CLEANUP_MAX_AGE_DAYS` for an age-bounded preview; `brew cleanup --dry-run --prune=all` for the full cache | Recommend the material cache scope that matches the user's goal; keep `brew autoremove --dry-run` separate | Cache cleanup removes downloaded bottles, manifests, and cask installers, not installed formulae or applications; future operations redownload them. Autoremove uninstalls formulae. |
 | npm | `npm cache verify`; `npm config get cache` | Version-supported cache clean | Redownload required. |
 | Yarn | Resolve cache path and generation-specific help | Version-specific cache clean | Redownload; semantics differ by generation. |
 | pnpm | `pnpm store path`; `pnpm store status` | `pnpm store prune` | Future installs may redownload. |
@@ -19,7 +19,18 @@ Use only built-in macOS commands and tools already installed on the machine. Rea
 
 For any other installed manager, use its current local help. Never chain cleanup commands; preserve each result and partial failure independently.
 
-Cache paths are evidence, not cleanup interfaces. Prefer a manager's verify, garbage-collection, prune, or age-bounded operation over deleting its entire cache. When a manager documents its cache as self-healing, do not imply that a broad clean is routine maintenance.
+Cache paths are evidence, not cleanup interfaces. Prefer a manager's supported verify, garbage-collection, prune, or clean operation over deleting its cache directory manually. When a manager documents its cache as self-healing, explain that cleanup is for reclaiming space rather than corruption repair; if the cache is fully redownloadable and material, recommend it without treating normal free space as a reason to keep it.
+
+### Homebrew recommendation
+
+Run the ordinary and `--prune=all` dry-runs when the Homebrew cache is material. Explain the result in plain language:
+
+- The ordinary preview is Homebrew's conservative stale/age policy.
+- `--prune=all` previews the full downloaded cache, including some current-version installers. These files are not active applications or formulae.
+- Recommend the full prune when its recovery is meaningful and the user has no stated need for offline or bandwidth-saving reinstalls. Offer an age-bounded cleanup as the lower-redownload alternative, not as the automatic default.
+- State that installed software remains installed and future Homebrew operations may download the artifacts again.
+
+Keep `brew autoremove` out of the cache group because it uninstalls dependencies and has a different consequence.
 
 ## Version managers
 

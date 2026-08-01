@@ -92,6 +92,8 @@ That distinction prevents a common cleanup mistake: treating “cache” as syno
 
 Findings are grouped by consequence so you can approve cheap cleanup without also agreeing to long rebuilds or loss of historical state.
 
+The default report is decision-first: **Clean up**, **Optional**, and **Keep**. TidyMac does the forensic accounting underneath, but it does not require users to understand package-manager retention policy, APFS reconciliation, or a dossier table before seeing the recommendation. Healthy free space affects urgency, not whether verified disposable caches are worth removing.
+
 TidyMac also distinguishes the right kind of action. Useful data may be better **evicted locally**, **relocated**, or **pruned by its owning tool** rather than deleted. Cloud deletion, workflow reset, Trash staging, and permanent deletion remain separate scopes.
 
 ## Generated opportunity map
