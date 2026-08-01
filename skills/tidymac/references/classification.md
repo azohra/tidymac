@@ -23,6 +23,25 @@ Treat failure to find a local owner as unknown. It is not equivalent to orphaned
 | State loss possible | App support, Docker volumes, device backups, archives | Confirm individually after inspection. |
 | Non-regenerable | User documents, Xcode archives, device backups | Recommend keeping unless the user identifies them as obsolete. |
 
+## Action class and scope
+
+Do not collapse every opportunity into deletion. Classify the operation independently from evidence and consequence.
+
+| Action | Meaning | Required distinction |
+|---|---|---|
+| Keep | Valuable, active, OS-managed, or insufficiently understood | Explain why size alone is not a cleanup reason. |
+| Evict local copy | Preserve the cloud original while releasing local allocation | Prove synchronization; do not confuse with synced deletion. |
+| Relocate | Move valid owned data through a supported application workflow | Confirm destination capacity, attachment requirements, and rollback. |
+| Native prune | Let the owning tool select unused cache or generated data | Inspect the native preview and categories first. |
+| Remove regenerable derivative | Remove generated proxy, optimized, render, or preview media | Prove the original remains and state regeneration time and space. |
+| Remove and redownload | Remove a reproducible asset such as a model, runtime, or game | State network, version, license, and future availability costs. |
+| Reset workflow | Remove sessions, writable layers, simulator state, or other workflow state | Confirm the exact state boundary individually. |
+| Guarded Trash move | Stage one verified direct path recoverably | Space remains used until Trash is reviewed and emptied. |
+| Synced/global delete | Delete data that propagates to cloud or other devices | State propagation and any Recently Deleted or retention window. |
+| Permanent delete | Irreversibly remove a specific target | Require a fresh explicit request after all other routes. |
+
+Record scope as this Mac, external volume, owning runtime, cloud account, or synchronized devices. An action can be low-cost locally and still have broad scope.
+
 Do not use an auto-clean tier. A bare skill invocation authorizes read-only auditing only. Treat a user's explicit approval of named action IDs as authorization for those actions and nothing else.
 
 ## Recommendation rules
@@ -33,6 +52,9 @@ Do not use an auto-clean tier. A bare skill invocation authorizes read-only audi
 - Inspect top-level contents and modification dates before proposing removal of application support or container data.
 - Research unfamiliar findings with current primary sources. Report the source and the remaining uncertainty.
 - Prefer a native tool's dry-run or inventory command before its cleanup command.
+- Prefer the owner-mediated order: native application or CLI, File Provider eviction or supported relocation, guarded Trash move, then permanent deletion.
+- Confirm synchronization before recommending eviction. If provider state is unknown, do not call a placeholder safely evictable.
+- Treat deletion in Mail, Messages, Photos, cloud folders, and other synchronized stores as potentially propagating until native behavior is established.
 - Never characterize failure to find an owner as proof that data is orphaned.
 - Call a container volume attached or referenced when that is what native metadata proves. Do not use “protected” or “active” as shorthand for a running workload.
 
@@ -49,6 +71,8 @@ Do not use an auto-clean tier. A bare skill invocation authorizes read-only audi
 - Describe measured sizes as allocated-size estimates. APFS clones, snapshots, sparse files, compression, and purgeable space can make apparent and physically recoverable sizes differ.
 - Use before/after free-space measurements as the final authority, while noting that background activity can change them.
 - For VM-backed runtimes, show native internal reclaimability, host-allocated backing-store size, and observed host recovery separately. Never substitute the sparse disk's logical capacity for any of them.
+- For File Provider content, show local allocation separately from logical file size and cloud size. Count an eviction opportunity only when local presence and synchronized remote state are established.
+- For relocation, count expected internal-disk recovery only when the owning application supports the move, an eligible destination exists, and the source/destination relationship will not duplicate the data indefinitely.
 
 If the displayed candidate rows do not exactly sum to their stated total, fix the rows or the total before reporting. A prose range does not excuse arithmetic whose lower or upper bound cannot be reproduced.
 
@@ -63,7 +87,11 @@ For each actionable finding, show:
 | Evidence | Why the finding was identified |
 | Confidence | Verified, likely, or unknown |
 | Consequence | What the user pays or loses |
-| Recommendation | Keep, clean, inspect, or research |
+| Action | Keep, evict, relocate, native prune, remove regenerable derivative, redownload, reset, Trash, synced delete, or permanent delete |
+| Scope | This Mac, external volume, owning runtime, cloud, or synchronized devices |
+| Recovery | Undo, restore, redownload, Recently Deleted, Trash, backup, or none |
+| Preconditions | Stopped owner, completed sync, attached destination, or other guard |
+| Recommendation | Machine-specific conclusion |
 
 Lead with the best few opportunities. Put exhaustive low-value inventory behind a concise summary.
 
