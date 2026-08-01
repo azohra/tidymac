@@ -15,17 +15,37 @@
 
 ---
 
-TidyMac finds meaningful disk-space opportunities across macOS, explains the consequence of each one, and cleans only what you approve.
+TidyMac investigates disk usage across macOS, explains what it means on this particular machine, and cleans only what you approve.
 
 It is a skill rather than a conventional cleaner app because the hard part is not finding large directories. The hard part is deciding whether an unfamiliar directory is disposable, expensive to regenerate, useful historical state, or the only remaining copy of something important.
 
 ## Install
 
+Using the Skills installer is convenient:
+
 ```bash
 npx skills add azohra/tidymac
 ```
 
-The installer can target Claude Code, Codex, or both. Invoke the installed skill with the syntax used by your host:
+The installer clones the GitHub repository, discovers `skills/tidymac`, and copies that complete directory into the selected host. TidyMac is entirely self-contained Markdown plus host UI metadata: there are no helper programs, runtime libraries, or later code downloads.
+
+The installer can target Claude Code, Codex, or both. To select both explicitly:
+
+```bash
+npx skills add azohra/tidymac -a claude-code -a codex
+```
+
+Node.js is not a TidyMac runtime requirement; `npx` is only one way to copy the skill into place. Without it, download the repository or a release archive and copy the complete folder to the host's skill directory:
+
+```bash
+mkdir -p "$HOME/.claude/skills" "$HOME/.agents/skills"
+cp -R /path/to/tidymac/skills/tidymac "$HOME/.claude/skills/tidymac"
+cp -R /path/to/tidymac/skills/tidymac "$HOME/.agents/skills/tidymac"
+```
+
+Use the first destination for Claude Code, the second for Codex, or both. That seven-file skill folder is the whole runtime product.
+
+Invoke the installed skill with the syntax used by your host:
 
 | Host | Invocation |
 |---|---|
@@ -52,7 +72,7 @@ A bare invocation runs a read-only audit. TidyMac presents a cleanup plan before
 - Evidence of app data whose owner is no longer obvious
 - iOS device backups, Trash, installers, and other large contextual storage
 
-The default pass starts with large user-space findings. It expands into slower or more specialized scans only when the results justify doing so.
+The audit starts with a fast user-space census, then lowers the scan floor and expands into contextual investigation. There is no fixed item-size definition of “important”: smaller findings are aggregated by owner and category, and another pass is required until the tail no longer changes the explanation or recommendations.
 
 ## How decisions work
 
@@ -70,6 +90,7 @@ Findings are grouped by consequence so you can approve cheap cleanup without als
 - Auditing is the default. Nothing is silently cleaned.
 - Every mutation is tied to an approved finding or command.
 - Unknown findings are researched rather than guessed at.
+- Reports use generic labels for private project and content names unless an exact path is needed for an action the user is considering.
 - “Unmatched” app data is never automatically called orphaned.
 - The current project and its ancestors are excluded from path cleanup.
 - Broad roots, symlinks, system directories, and changed-since-scan paths are rejected.
@@ -80,15 +101,15 @@ Findings are grouped by consequence so you can approve cheap cleanup without als
 
 ## Architecture
 
-TidyMac deliberately splits deterministic work from subjective work:
+TidyMac is deliberately judgment-first:
 
 ```text
-Read-only scanners → structured evidence → model judgment → approval → guarded execution
+Native macOS census → contextual investigation → model conclusions → approval → exact native action
 ```
 
-The bundled Python scanners handle pathname-safe inventory, allocated-size estimates, project-marker verification, installed-app evidence, and structured JSON output. The skill handles research, confidence, consequences, prioritization, and conversation with the user.
+Claude or Codex uses built-in macOS commands and tools already installed on the machine to gather evidence. It keeps digging with native inventories, dry-runs, manifests, application metadata, processes, receipts, timestamps, project history, and current primary sources until the important space is explained. Raw directory sizes are intermediate evidence, not the report.
 
-The guarded path executor creates a plan before acting. It records path identity and size, emits an approval token, and revalidates everything immediately before moving or deleting data. If a target changed in the meantime, it stops.
+The cleanup contract requires an exact plan and explicit approval. Direct-path actions are revalidated immediately before a recoverable move to Trash. Native cleanup commands are previewed when possible and approved individually.
 
 ## Example requests
 
@@ -107,4 +128,20 @@ I need 20 GB quickly; prioritize things that won't require a rebuild.
 
 - macOS
 - Claude Code or Codex
-- Python 3 from macOS developer tools or another local installation; bundled scripts use only the standard library
+
+That is the full runtime requirement. TidyMac does not require Python, Node.js, npm packages, compiled helpers, a daemon, or a service. Optional ecosystem commands such as `brew`, `docker`, or `xcrun` are used only when they are already installed and relevant to the machine.
+
+A capable reasoning model is strongly recommended for a full audit. TidyMac contains explicit evidence, privacy, arithmetic, and safety preflight checks so a weaker model should fail closed with coverage gaps instead of inventing a complete-looking answer.
+
+Tested guidance:
+
+| Host | Full audit recommendation |
+|---|---|
+| Claude Code | Sonnet or Opus class; Haiku is not supported for full-machine audits |
+| Codex | A frontier Codex model with medium or higher reasoning |
+
+The host chooses and provides the model; TidyMac does not call an API or bundle model credentials.
+
+## Versioning
+
+TidyMac releases are Git tags and GitHub releases. The skill format does not need a runtime version field: the installer records the repository source and content hash. Use semantic versions for human-facing changes—patch for fixes, minor for backward-compatible workflow or capability changes, and major for a new contract or incompatible behavior.
