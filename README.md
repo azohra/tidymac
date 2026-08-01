@@ -1,31 +1,34 @@
 <p align="center">
-  <pre align="center">
-  _____ _     _       __  __
- |_   _(_) __| |_   _|  \/  | __ _  ___
-   | | | |/ _` | | | | |\/| |/ _` |/ __|
-   | | | | (_| | |_| | |  | | (_| | (__
-   |_| |_|\__,_|\__, |_|  |_|\__,_|\___|
-                |___/
-  </pre>
-  <strong>Your Mac is hoarding. TidyMac finds out why.</strong>
-  <br><br>
-  A judgment-driven storage investigator for Claude Code and Codex.
-  <br><br>
-  <a href="https://github.com/azohra/tidymac/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/azohra/tidymac?style=flat-square"></a>
-  <img alt="Runtime dependencies: none" src="https://img.shields.io/badge/runtime_dependencies-none-2ea44f?style=flat-square">
+  <img src="assets/tidymac-hero.svg" alt="TidyMac — your Mac is hoarding. Find out why." width="100%">
 </p>
 
----
+<p align="center">
+  <a href="https://github.com/azohra/tidymac/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/azohra/tidymac?style=flat-square"></a>
+  <img alt="Hosts: Claude Code and Codex" src="https://img.shields.io/badge/hosts-Claude_Code_+_Codex-6f5bd3?style=flat-square">
+  <img alt="Runtime dependencies: none" src="https://img.shields.io/badge/runtime_dependencies-none-2ea44f?style=flat-square">
+  <img alt="Audit mode: read-only" src="https://img.shields.io/badge/audit-read--only_by_default-555?style=flat-square">
+</p>
+
+<p align="center">
+  A judgment-driven storage investigator for Claude Code and Codex.<br>
+  <a href="#install">Install</a> · <a href="#what-it-feels-like">See an example</a> · <a href="#safety">Safety model</a>
+</p>
 
 TidyMac finds what occupies a Mac, investigates why it exists, and gives the decision first:
 
 | Decision | Meaning |
 |---|---|
-| **Clean up** | Verified disposable data with a concrete action |
-| **Optional** | Real recovery with a noticeable tradeoff |
-| **Keep** | Active, personal, non-regenerable, unknown, or unsupported data |
+| 🟢 **Clean up** | Verified disposable data with a concrete action |
+| 🟡 **Optional** | Real recovery with a noticeable tradeoff |
+| 🟣 **Keep** | Active, personal, non-regenerable, unknown, or unsupported data |
 
 Nothing changes until you approve the exact action.
+
+## How it works
+
+| ① Investigate | ② Explain | ③ Decide | ④ Verify |
+|:---:|:---:|:---:|:---:|
+| Measure the Mac and interrogate detected tools | Connect size to ownership, activity, and regeneration cost | Separate **Clean up**, **Optional**, and **Keep** | Recheck approved actions and measure what changed |
 
 ## What it feels like
 
