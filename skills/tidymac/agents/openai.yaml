@@ -1,4 +1,4 @@
 interface:
   display_name: "TidyMac"
   short_description: "Deeply investigate and safely reclaim Mac storage"
-  default_prompt: "Use $tidymac to perform a deep, read-only, machine-specific storage investigation and present a privacy-preserving, consequence-aware cleanup plan with reconciled totals."
+  default_prompt: "Use $tidymac to perform a deep, read-only, machine-specific storage investigation, interrogate material native runtimes with permission, and present a consequence-aware cleanup plan with reconciled totals."
