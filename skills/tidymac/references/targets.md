@@ -22,7 +22,7 @@ Treat every measurement as evidence, not a deletion plan.
 |---|---|---|
 | App caches | `~/Library/Caches`, nested Chromium/Electron caches | Check running state; distinguish Code Cache and GPUCache from Service Workers, blob storage, and IndexedDB. |
 | App state | Application Support, containers, saved state, HTTP storage | Broad app-data directories are context until investigated. |
-| Logs | User and diagnostic logs | Preserve recent logs during active debugging; prefer age-bounded proposals. |
+| Logs | User and diagnostic logs | Preserve recent logs during active debugging; recommend old, owner-verified, isolated logs when material. |
 | XDG and tool data | Hidden home directories and `~/.cache` | Identify the owner, current installation, and regeneration cost. |
 | Xcode | DerivedData, DeviceSupport, simulators, archives | Archives are non-regenerable; use `simctl` for current simulator state. |
 | Backups | MobileSync device backups | Confirm individually; never count as routine cleanup. |

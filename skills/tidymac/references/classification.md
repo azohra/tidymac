@@ -47,6 +47,10 @@ Do not use an auto-clean tier. A bare skill invocation authorizes read-only audi
 ## Recommendation rules
 
 - Recommend a low-impact batch only when evidence is verified and consequences are bounded.
+- Treat free space as urgency context, not a veto. Recommend verified disposable data when it is material even on a healthy disk.
+- Recommend fully redownloadable package downloads and owner-managed caches when the native preview establishes the selected scope. Current-version cached installers are not active installations; describe the cost as future redownload.
+- Recommend old owner-verified diagnostic logs when the owning app is stopped and the exact log scope is isolated from settings, projects, and user data.
+- Put rebuilds, sign-outs, workflow resets, and useful local-history loss in **Optional**, even when technically reproducible.
 - Split redownload, rebuild, workflow-reset, and state-loss findings into separate approval groups.
 - Check whether the owning app or service is running before proposing removal of mutable app data.
 - Inspect top-level contents and modification dates before proposing removal of application support or container data.
@@ -77,6 +81,16 @@ Do not use an auto-clean tier. A bare skill invocation authorizes read-only audi
 If the displayed candidate rows do not exactly sum to their stated total, fix the rows or the total before reporting. A prose range does not excuse arithmetic whose lower or upper bound cannot be reproduced.
 
 ## Report shape
+
+Start with a compact normal-person decision summary:
+
+| Group | Include | Say |
+|---|---|---|
+| Clean up | Verified disposable data with a concrete native or guarded action | Total, one consequence, included IDs |
+| Optional | Rebuild, sign-out, reset, or useful-history tradeoffs | Total, tradeoff, included IDs |
+| Keep | Non-regenerable, active, unknown, protected, or unsupported | Why it stays |
+
+Do not lead with coverage percentages, confidence taxonomies, raw paths, or a large dossier table. Show those after the decision summary so an expert can verify the work without making every user operate at that level.
 
 For each actionable finding, show:
 
