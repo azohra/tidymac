@@ -14,6 +14,8 @@ Filesystem measurement locates allocated blocks. The audit is complete only afte
 
 A measurement floor is only a way to get fast bearings. It is never a claim that smaller space does not matter. Do not force a recursive entire-home measurement to manufacture a coverage percentage; derive coverage from separately measured roots and disclose the unmeasured gap.
 
+Alongside coverage, maintain a volume reconciliation ledger. Record Data-volume usage, the non-overlapping path census, native-owned allocations that sit outside or overlap the census, other users or mounted volumes, inaccessible scope, documented purgeable or OS-managed context, and residual unexplained storage. Preserve the source and measurement basis for each figure. The purpose is to expose gaps and direct more investigation, not force `du`, `df`, APFS, and native-tool figures into a false equality.
+
 ## Forensic dossier
 
 For each queued finding or meaningful aggregate, seek:
@@ -25,6 +27,8 @@ For each queued finding or meaningful aggregate, seek:
 | Activity | Directory and child modification times, project history, running state, or native last-used metadata |
 | Installed state | Application bundle, cask/formula, package-manager record, version-manager inventory, plugin, extension, or service |
 | Data class | Cache, dependency, build output, workflow state, user-created content, backup, runtime disk, volume, or unknown |
+| Correct action | Keep, local eviction, relocation, native prune, regenerable-derivative removal, redownload, reset, guarded Trash, synced delete, or permanent delete |
+| Scope and recovery | This Mac, external volume, owning runtime, cloud, or synchronized devices; undo, Trash, retention, redownload, backup, or none |
 | Native view | Inventory, status, or dry-run from the owning tool |
 | Regeneration cost | Silent, network redownload, local rebuild, workflow reset, state loss possible, or non-regenerable |
 | Real reclaimability | Native estimate, allocated size, sparse/clone risk, overlap, and whether Trash delays recovery |
@@ -57,6 +61,11 @@ When an ecosystem materially contributes space, use the installed tool's current
 - Xcode: `xcrun simctl` device/runtime inventories
 - Package managers: cache location, installed versions, and supported verify, info, list, or dry-run commands
 - Version managers: installed versions plus project version files
+- File Providers: local/online/pinned/synchronization state and supported eviction controls
+- Local AI tools: model/revision inventory, configured stores, shared blobs, and native expected recovery
+- Creative tools: generated-media, cache, optional-library, and supported relocation views
+- Game launchers and VM applications: installed payloads, saves or state, snapshots, compact/reclaim, and move-library controls
+- Apple apps and browsers: native management surfaces for backups, attachments, synchronized data, profiles, and caches
 
 A dry-run estimate supersedes the apparent size of a broad cache root when estimating likely recovery. Describe only categories demonstrated by the dry-run output; a few visible entries do not explain the entire total. Starting an app, daemon, VM, or runtime is a state change. When a stopped runtime is material, offer a bounded temporary start for read-only inventory and restoration to the recorded prior state; otherwise report the blocked native evidence instead of stopping at an opaque disk image.
 
@@ -85,3 +94,5 @@ Research only to answer a dossier question. Prefer vendor documentation, source 
 ## Completion
 
 The final report answers: what is using space here, why, and what is worth doing? It includes coverage, conclusions, meaningful smaller aggregates, consequence-aware opportunities, valuable context, and precisely blocked or unresolved dossiers. It does not substitute raw command output for analysis.
+
+When a generated report is available, build it only after these conclusions exist. A polished opportunity map is not evidence that the audit reached adequate coverage.

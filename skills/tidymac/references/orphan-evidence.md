@@ -10,6 +10,7 @@ Use built-in application metadata and Spotlight where available:
 - Read bundle identifiers and display names from `Contents/Info.plist` with `plutil` or `mdls`.
 - Relate sandbox container names, app-group identifiers, and leading team identifiers to installed bundle IDs.
 - Check nested login items, LaunchAgents, package receipts, Homebrew casks, browser extensions, plugins, and version-manager installations when relevant.
+- Check vendor uninstallers, application groups, team identifiers, nested bundles, system extensions, background items, and package-manager ownership before treating related files as abandoned.
 - Check a narrowly identified process or open-file owner before touching mutable data.
 
 Do not assume `group.com.apple.*` or team-prefixed group containers are leftovers simply because their names do not exactly match an app bundle.
@@ -37,5 +38,9 @@ Use “verified leftover” only when authoritative uninstall evidence or the us
 ## Data-value checks
 
 Even verified leftovers can contain valuable state. Confirm individually when top-level structure suggests databases, projects, exports, recordings, downloads, models, media, licenses, certificates, keys, authentication, recovery data, backups, archives, simulators, VM disks, container volumes, or shared vendor libraries.
+
+Cloud-provider state, shared AI-model blobs, creative libraries, game saves, plugins, and app-group containers can outlive one application while remaining owned by another installed component. Establish the remaining consumer before calling them leftovers.
+
+When uninstalling an installed application, prefer its bundled or vendor-supported uninstaller. Record what it removes and preserves, then investigate residual paths separately. Deleting an `.app` bundle does not prove related data is disposable or that a subscription, login item, extension, or shared component is gone.
 
 Prefer Trash for approved direct-path removal. Space is not reclaimed until Trash is reviewed and emptied.
