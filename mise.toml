@@ -1,0 +1,35 @@
+# mise is the command surface for this repo: `mise tasks` lists the verbs.
+
+[tasks.setup]
+description = "Arm the commit gate"
+run = "mise generate git-pre-commit --write --task=pre-commit"
+
+[tasks.check]
+description = "Skill structure integrity"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+f=skills/tidymac/SKILL.md
+[ -f "$f" ] || { echo "check: $f missing" >&2; exit 1; }
+head -1 "$f" | grep -qx -- '---' || { echo "check: SKILL.md lacks frontmatter" >&2; exit 1; }
+grep -q '^name: tidymac$' "$f" || { echo "check: frontmatter name does not match the skill directory" >&2; exit 1; }
+grep -q '^description: .' "$f" || { echo "check: frontmatter description missing" >&2; exit 1; }
+# every repo-relative link in skill markdown resolves
+fail=0
+while IFS=: read -r file link; do
+  case "$link" in http*|\\#*) continue;; esac
+  base=$(dirname "$file")
+  [ -e "$base/${link%%#*}" ] || { echo "check: broken link $link in $file" >&2; fail=1; }
+done < <(grep -RoE '\\]\\(([^)#h][^)]*)\\)' skills/ --include='*.md' | sed -E 's/\\]\\(([^)]*)\\)/:\\1/' | awk -F: '{print $1":"$3}')
+[ "$fail" = 0 ]
+echo "check: skill intact"
+"""
+
+[tasks.pre-commit]
+description = "Commit gate: branches author, main never does"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+[ "$(git branch --show-current)" != "main" ] || { echo "pre-commit: refusing — commits are authored on branches, never on main" >&2; exit 1; }
+mise run check
+"""
