@@ -9,7 +9,6 @@ on:
 permissions:
   contents: read
 
-# A superseded check has nothing to protect; cancel it.
 concurrency:
   group: check-${{ github.ref }}
   cancel-in-progress: true
