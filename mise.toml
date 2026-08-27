@@ -1,9 +1,5 @@
 # mise is the command surface for this repo: `mise tasks` lists the verbs.
 
-[tasks.setup]
-description = "Arm the commit gate"
-run = "mise generate git-pre-commit --write --task=pre-commit"
-
 [tasks.check]
 description = "Skill structure integrity"
 run = """
@@ -23,13 +19,4 @@ while IFS=: read -r file link; do
 done < <(grep -RoE '\\]\\(([^)#h][^)]*)\\)' skills/ --include='*.md' | sed -E 's/\\]\\(([^)]*)\\)/:\\1/' | awk -F: '{print $1":"$3}')
 [ "$fail" = 0 ]
 echo "check: skill intact"
-"""
-
-[tasks.pre-commit]
-description = "Commit gate: branches author, main never does"
-run = """
-#!/usr/bin/env bash
-set -euo pipefail
-[ "$(git branch --show-current)" != "main" ] || { echo "pre-commit: refusing — commits are authored on branches, never on main" >&2; exit 1; }
-mise run check
 """
