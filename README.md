@@ -62,7 +62,7 @@ Choose a group or finding. TidyMac rechecks it, shows the exact command or nativ
 ## Install
 
 ```bash
-npx skills add azohra/tidymac -a claude-code -a codex
+npx skills add 'azohra/tidymac#v3.4.1' --global -a claude-code -a codex
 ```
 
 Invoke it with your host’s syntax:
