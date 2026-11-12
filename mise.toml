@@ -1,6 +1,11 @@
 
+[tasks."check:tasks"]
+description = "Every task definition is valid"
+run = "mise tasks validate"
+
 [tasks.check]
 description = "Skill structure integrity"
+depends = ["check:tasks"]
 run = """
 #!/usr/bin/env bash
 set -euo pipefail
